@@ -1,0 +1,26 @@
+<resources>
+
+    <string name="app_name">Mushroom Grader</string>
+    <string name="capture_image">Capture Image</string>
+    <string name="import_image">Import Image</string>
+    <string name="about_app">About App</string>
+    <string name="mushroom_species">Species:</string>
+    <string name="mushroom_type">Type:</string>
+    <string name="mushroom_grade">Grade:</string>
+    <string name="mushroom_habitat">Habitat:</string>
+    <string name="mushroom_nutrients">Nutrients/Vitamins:</string>
+    <string name="edible">Edible</string>
+    <string name="poisonous">Poisonous</string>
+    <string name="camera_permission_required">Camera permission is required</string>
+    <string name="about_description">Mushroom Grader is an AI-powered app that helps identify mushroom species, determines if they are edible or poisonous, and provides detailed information about their characteristics.</string>
+    <string name="version">Version 1.0</string>
+    <string name="capture_mushroom">Capture Mushroom</string>
+    <string name="retake">Retake</string>
+    <string name="analyze">Analyze</string>
+    <string name="back">Back</string>
+    <string name="history">History</string>
+    <string name="save">Save</string>
+    <string name="analysis_history">Analysis History</string>
+    <string name="no_history">No analysis history yet</string>
+    <string name="saved_successfully">Analysis saved successfully</string>
+</resources>

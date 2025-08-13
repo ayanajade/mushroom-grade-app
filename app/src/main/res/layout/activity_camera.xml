@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/previewView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Camera Overlay for Mushroom Detection -->
+    <View
+        android:id="@+id/boundingBox"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:layout_centerInParent="true"
+        android:background="@drawable/camera_overlay" />
+
+    <!-- Instructions -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Position mushroom within the box"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:background="#80000000"
+        android:padding="12dp"
+        android:layout_above="@id/boundingBox"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Control Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="24dp"
+        android:background="#80000000">
+
+        <Button
+            android:id="@+id/backButton"
+            android:layout_width="80dp"
+            android:layout_height="56dp"
+            android:text="@string/back"
+            android:textColor="@color/white"
+            android:background="@drawable/card_background"
+            android:layout_marginEnd="32dp" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="36dp"
+            app:cardElevation="4dp"
+            xmlns:app="http://schemas.android.com/apk/res-auto">
+
+            <Button
+                android:id="@+id/captureButton"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/primary_green"
+                android:text="📸"
+                android:textSize="24sp"
+                android:textColor="@color/white" />
+
+        </androidx.cardview.widget.CardView>
+
+        <Button
+            android:id="@+id/switchCameraButton"
+            android:layout_width="80dp"
+            android:layout_height="56dp"
+            android:text="🔄"
+            android:textSize="20sp"
+            android:textColor="@color/white"
+            android:background="@drawable/card_background"
+            android:layout_marginStart="32dp" />
+
+    </LinearLayout>
+
+</RelativeLayout>
