@@ -2,6 +2,10 @@
 
     <string name="app_name">Mushroom Grader</string>
     <string name="capture_image">Capture Image</string>
+    <string name="scan">Scan Mushroom</string>
+    <string name="app">App</string>
+    <string name="categories">Categories</string>
+    <string name="list">List</string>
     <string name="import_image">Import Image</string>
     <string name="about_app">About App</string>
     <string name="mushroom_species">Species:</string>

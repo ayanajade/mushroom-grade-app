@@ -12,4 +12,23 @@
     <color name="danger_red_dark">#D32F2F</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Light greys -->
+    <color name="light_grey">#FFF5F5F5</color>
+    <color name="very_light_grey">#FFEEEEEE</color>
+    <color name="soft_grey">#FFE0E0E0</color>
+
+    <!-- Medium greys -->
+    <color name="medium_grey">#FFBDBDBD</color>
+    <color name="grey">#FF9E9E9E</color>
+    <color name="dark_grey">#FF757575</color>
+
+    <!-- Darker greys -->
+    <color name="charcoal_grey">#FF424242</color>
+    <color name="very_dark_grey">#FF212121</color>
+
+    <!-- Popular UI greys -->
+    <color name="material_grey">#FF616161</color>
+    <color name="hint_grey">#FF999999</color>
+    <color name="border_grey">#FFCCCCCC</color>
 </resources>

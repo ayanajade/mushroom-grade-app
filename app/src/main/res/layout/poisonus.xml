@@ -106,7 +106,7 @@
                             android:id="@+id/nameTextView"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Oyster Mushroom"
+                            android:text="Amanita phalloides"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp"
                             android:textStyle="bold" />
@@ -132,7 +132,7 @@
                             android:id="@+id/classTextView"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Pleurotus Ostreatus"
+                            android:text="Agaricomycetes"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp"
                             android:textStyle="bold" />
@@ -158,38 +158,13 @@
                             android:id="@+id/typeTextView"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/edible"
-                            android:textColor="@color/primary_green"
+                            android:text="@string/poisonous"
+                            android:textColor="@color/danger_red_dark"
                             android:textSize="16sp"
                             android:textStyle="bold" />
 
                     </LinearLayout>
 
-                    <!-- Grade (only for edible) -->
-                    <LinearLayout
-                        android:id="@+id/gradeLayout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/mushroom_grade"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/gradeTextView"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Grade B"
-                            android:textColor="@color/text_primary"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-
-                    </LinearLayout>
 
                 </LinearLayout>
 
@@ -232,7 +207,7 @@
                         android:id="@+id/habitatTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Deciduous trees, logs, and decaying wood. Common in temperate regions worldwide."
+                        android:text="Found in forests, often near oak, pine, and other broadleaf trees; grows on soil in shaded, moist areas."
                         android:textColor="@color/text_primary"
                         android:textSize="14sp"
                         android:layout_marginTop="4dp" />
@@ -260,7 +235,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/mushroom_nutrients"
+                        android:text="Cautions / Danger"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp"
                         android:textStyle="bold" />
@@ -269,7 +244,7 @@
                         android:id="@+id/nutrientsTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="High in protein, B-vitamins (B2, B3, B5), potassium, phosphorus, and dietary fiber. Also contains antioxidants and beta-glucans."
+                        android:text="Contains deadly amatoxins that inhibit RNA polymerase II, leading to liver and kidney failure. Symptoms may be delayed 6–24 hours after ingestion, including nausea, vomiting, abdominal pain, followed by apparent recovery, and then severe organ damage. Even small amounts can be fatal; no known antidote exists—immediate medical attention is critical."
                         android:textColor="@color/text_primary"
                         android:textSize="14sp"
                         android:layout_marginTop="4dp" />
