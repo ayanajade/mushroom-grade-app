@@ -41,19 +41,7 @@
         android:gravity="center"
         android:orientation="vertical">
 
-        <Button
-            android:id="@+id/captureImageButton"
-            android:layout_width="240dp"
-            android:layout_height="56dp"
-            android:layout_marginBottom="20dp"
-            android:background="@drawable/button_background"
-            android:elevation="4dp"
-            android:gravity="center"
-            android:stateListAnimator="@null"
-            android:text="@string/scan"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+
 
         <Button
             android:id="@+id/captureImageButton"

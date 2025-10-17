@@ -47,6 +47,17 @@ android {
 
 dependencies {
 
+
+        // Core TensorFlow Lite library
+        implementation("org.tensorflow:tensorflow-lite:2.14.0")
+
+        // Optional: support for image preprocessing (if using images)
+        implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
+
+        // Optional: vision tasks (for image classification, detection, etc.)
+        implementation("org.tensorflow:tensorflow-lite-task-vision:0.4.4")
+
+
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
