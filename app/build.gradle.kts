@@ -1,22 +1,20 @@
 plugins {
 
     //id("com.android.application")
+    //kotlin("android")
     //id("org.jetbrains.kotlin.android")
-
-
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
 }
 
 android {
     namespace = "com.example.mushroom_grader"
-    compileSdk = 36  //34
+    compileSdk = 34 
 
     defaultConfig {
         applicationId = "com.example.mushroom_grader"
         minSdk = 29
-        targetSdk = 36  //34
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 

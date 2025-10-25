@@ -48,9 +48,11 @@ class ResultActivity : AppCompatActivity() {
         imageUriString?.let { uriString ->
             val imageUri = Uri.parse(uriString)
             binding.detectedImageView.setImageURI(imageUri)
+            binding.previewImageView.setImageURI(imageUri)
         } ?: run {
             // Set a placeholder image for camera captures
             binding.detectedImageView.setImageResource(R.drawable.mushroom_logo)
+            binding.previewImageView.setImageResource(R.drawable.mushroom_logo)
         }
 
         if (isPoisonous) {

@@ -3,6 +3,8 @@ package com.example.mushroom_grader
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.net.Uri
+import java.io.File
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -29,9 +31,7 @@ class CameraActivity : AppCompatActivity() {
 
     private fun setupClickListeners() {
         binding.captureButton.setOnClickListener {
-            // Simulate capture and navigate to results
-            // In a real app, you would capture the image here
-            simulateAnalysisAndShowResults()
+            takePhoto()
         }
 
         binding.backButton.setOnClickListener {
@@ -76,18 +76,36 @@ class CameraActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun simulateAnalysisAndShowResults() {
-        // Simulate processing time
-        binding.captureButton.isEnabled = false
-        binding.captureButton.text = "Processing..."
+    private fun takePhoto() {
+        val imageCapture = imageCapture ?: return
 
-        // Navigate to results after a short delay (simulating AI processing)
-        binding.captureButton.postDelayed({
-            val intent = Intent(this, ResultActivity::class.java)
-            intent.putExtra("is_poisonous", false) // Sample data - randomly set to false
-            startActivity(intent)
-            finish()
-        }, 1500)
+        // Disable UI while capturing
+        binding.captureButton.isEnabled = false
+
+        val photoFile = File(externalCacheDir,
+            "mushroom-${System.currentTimeMillis()}.jpg")
+
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+        imageCapture.takePicture(
+            outputOptions,
+            ContextCompat.getMainExecutor(this),
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onError(exc: ImageCaptureException) {
+                    binding.captureButton.isEnabled = true
+                    Log.e("CameraActivity", "Photo capture failed: ${exc.message}", exc)
+                }
+
+                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                    val savedUri = Uri.fromFile(photoFile)
+                    val intent = Intent(this@CameraActivity, ResultActivity::class.java).apply {
+                        putExtra("image_uri", savedUri.toString())
+                        putExtra("is_poisonous", false) // TODO: replace with real inference
+                    }
+                    startActivity(intent)
+                    finish()
+                }
+            })
     }
 
     override fun onDestroy() {

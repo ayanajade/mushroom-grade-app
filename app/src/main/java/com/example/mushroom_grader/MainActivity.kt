@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -38,16 +37,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val pickImageLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == RESULT_OK) {
-            result.data?.data?.let { imageUri ->
-                // Navigate to result activity with imported image
-                val intent = Intent(this, ResultActivity::class.java)
-                intent.putExtra("image_uri", imageUri.toString())
-                intent.putExtra("is_poisonous", false) // Sample data
-                startActivity(intent)
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let { imageUri ->
+            val intent = Intent(this, ResultActivity::class.java).apply {
+                putExtra("image_uri", imageUri.toString())
+                putExtra("is_poisonous", false) // TODO replace with inference result
             }
+            startActivity(intent)
         }
     }
 
@@ -95,8 +92,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openImagePicker() {
-        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        pickImageLauncher.launch(intent)
+        pickImageLauncher.launch("image/*")
     }
 }
 
