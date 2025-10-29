@@ -1,156 +1,200 @@
 package com.example.mushroom_grader
 
 import android.content.Intent
-import android.net.Uri
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.View
+
 import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
+
 import com.example.mushroom_grader.databinding.ActivityResultBinding
-import kotlin.random.Random
+import com.example.mushroom_grader.ml.MLModelHelper
+import com.example.mushroom_grader.ml.MushroomCategory
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import java.util.Locale
 
 class ResultActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityResultBinding
+    private lateinit var mlModelHelper: MLModelHelper
+
+    private var className: String = ""
+    private var classId: Int = 0
+    private var confidence: Float = 0f
+    private var isPoisonous: Boolean = false
+    private var category: String = ""
+    private var grade: String? = null
+    private var imagePath: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityResultBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupClickListeners()
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = getString(R.string.classification_result)
+
+        mlModelHelper = MLModelHelper(this)
+
+        getIntentData()
         displayResults()
+        setupClickListeners()
     }
 
-    private fun setupClickListeners() {
-        binding.backButton.setOnClickListener {
-            navigateToMain()
-        }
-
-        binding.retakeButton.setOnClickListener {
-            startActivity(Intent(this, CameraActivity::class.java))
-            finish()
-        }
-    }
-
-    private fun navigateToMain() {
-        val intent = Intent(this, MainActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-        startActivity(intent)
-        finish()
+    private fun getIntentData() {
+        className = intent.getStringExtra("className") ?: "Unknown"
+        classId = intent.getIntExtra("classId", -1)
+        confidence = intent.getFloatExtra("confidence", 0f)
+        isPoisonous = intent.getBooleanExtra("isPoisonous", false)
+        category = intent.getStringExtra("category") ?: "INEDIBLE"
+        grade = intent.getStringExtra("grade")
+        imagePath = intent.getStringExtra("imagePath")
     }
 
     private fun displayResults() {
-        val isPoisonous = intent.getBooleanExtra("is_poisonous", Random.nextBoolean())
-        val imageUriString = intent.getStringExtra("image_uri")
-
-        // Load image if provided
-        imageUriString?.let { uriString ->
-            val imageUri = Uri.parse(uriString)
-            binding.detectedImageView.setImageURI(imageUri)
-            binding.previewImageView.setImageURI(imageUri)
-        } ?: run {
-            // Set a placeholder image for camera captures
-            binding.detectedImageView.setImageResource(R.drawable.mushroom_logo)
-            binding.previewImageView.setImageResource(R.drawable.mushroom_logo)
+        imagePath?.let {
+            val bitmap = BitmapFactory.decodeFile(it)
+            binding.ivMushroom.setImageBitmap(bitmap)
         }
 
-        if (isPoisonous) {
-            displayPoisonousResults()
+        binding.tvMushroomName.text = className
+
+        val confidencePercent = String.format(Locale.getDefault(), "%.2f%%", confidence * 100)
+        binding.tvConfidence.text = getString(R.string.confidence_format, confidencePercent)
+
+        displaySafetyStatus()
+        displayGrade()
+        displayDetailedInfo()
+    }
+
+    private fun displaySafetyStatus() {
+        when {
+            isPoisonous -> {
+                binding.cardSafety.setCardBackgroundColor(
+                    ContextCompat.getColor(this, android.R.color.holo_red_dark)
+                )
+                binding.tvSafetyTitle.text = getString(R.string.danger_poisonous)
+                binding.tvSafetyMessage.text = getString(R.string.poisonous_warning)
+                binding.tvSafetyTitle.setTextColor(ContextCompat.getColor(this, android.R.color.white))
+                binding.tvSafetyMessage.setTextColor(ContextCompat.getColor(this, android.R.color.white))
+            }
+            category == MushroomCategory.INEDIBLE.name -> {
+                binding.cardSafety.setCardBackgroundColor(
+                    ContextCompat.getColor(this, android.R.color.holo_orange_dark)
+                )
+                binding.tvSafetyTitle.text = getString(R.string.warning_inedible)
+                binding.tvSafetyMessage.text = getString(R.string.inedible_warning)
+                binding.tvSafetyTitle.setTextColor(ContextCompat.getColor(this, android.R.color.white))
+                binding.tvSafetyMessage.setTextColor(ContextCompat.getColor(this, android.R.color.white))
+            }
+            else -> {
+                binding.cardSafety.setCardBackgroundColor(
+                    ContextCompat.getColor(this, android.R.color.holo_green_dark)
+                )
+                binding.tvSafetyTitle.text = getString(R.string.safe_to_eat)
+                binding.tvSafetyMessage.text = getString(R.string.safe_warning)
+                binding.tvSafetyTitle.setTextColor(ContextCompat.getColor(this, android.R.color.white))
+                binding.tvSafetyMessage.setTextColor(ContextCompat.getColor(this, android.R.color.white))
+            }
+        }
+    }
+
+    private fun displayGrade() {
+        if (grade != null) {
+            binding.cardGrade.visibility = View.VISIBLE
+            binding.tvGradeValue.text = grade
+
+            val gradeDescription = when (grade) {
+                "Class A", "Extra" -> getString(R.string.grade_premium)
+                "Class B", "Class I" -> getString(R.string.grade_good)
+                "Class C", "Class II" -> getString(R.string.grade_fair)
+                "Defective" -> getString(R.string.grade_defective)
+                else -> ""
+            }
+            binding.tvGradeDescription.text = gradeDescription
         } else {
-            displayEdibleResults()
+            binding.cardGrade.visibility = View.GONE
         }
     }
 
-    private fun displayPoisonousResults() {
-        // Sample poisonous mushroom data
-        val poisonousSpecies = listOf(
-            "Death Cap", "Destroying Angel", "False Morel",
-            "Jack O'Lantern", "Deadly Galerina"
-        )
-        val habitats = listOf(
-            "Oak forests, near roots",
-            "Coniferous and deciduous forests",
-            "Sandy soil, disturbed areas",
-            "Decaying hardwood stumps",
-            "Decaying conifer wood"
-        )
+    private fun displayDetailedInfo() {
+        val detailedInfo = mlModelHelper.getMushroomInfo(classId)
+        binding.tvDetailedInfo.text = detailedInfo
 
-        val randomSpecies = poisonousSpecies.random()
-        val randomHabitat = habitats.random()
-
-        // Update UI for poisonous mushroom
-        binding.speciesTextView.text = randomSpecies
-        binding.speciesTextView.setTextColor(ContextCompat.getColor(this, R.color.danger_red))
-
-        binding.typeTextView.text = getString(R.string.poisonous)
-        binding.typeTextView.setTextColor(ContextCompat.getColor(this, R.color.danger_red))
-
-        binding.habitatTextView.text = randomHabitat
-        binding.habitatTextView.setTextColor(ContextCompat.getColor(this, R.color.danger_red))
-
-        // Hide grade and nutrients for poisonous mushrooms
-        binding.gradeLayout.visibility = View.GONE
-        binding.nutrientsLayout.visibility = View.GONE
-
-        // Change card background to danger
-        val infoCard = binding.infoCard
-        infoCard.setCardBackgroundColor(ContextCompat.getColor(this, R.color.danger_red))
-
-        // Update text colors for visibility on red background
-        binding.speciesTextView.setTextColor(ContextCompat.getColor(this, R.color.white))
-        binding.typeTextView.setTextColor(ContextCompat.getColor(this, R.color.white))
-        binding.habitatTextView.setTextColor(ContextCompat.getColor(this, R.color.white))
-
-        // Update label colors
-        val labels = listOf(
-            binding.root.findViewById<android.widget.TextView>(R.id.speciesTextView).parent as android.view.ViewGroup
-        )
+        val categoryText = when (category) {
+            MushroomCategory.EDIBLE.name -> getString(R.string.category_edible)
+            MushroomCategory.POISONOUS.name -> getString(R.string.category_poisonous)
+            MushroomCategory.INEDIBLE.name -> getString(R.string.category_inedible)
+            else -> getString(R.string.category_unknown)
+        }
+        binding.tvCategory.text = categoryText
     }
 
-    private fun displayEdibleResults() {
-        // Sample edible mushroom data
-        val edibleSpecies = listOf(
-            "Oyster Mushroom", "Shiitake", "Button Mushroom",
-            "Portobello", "Cremini", "Chanterelle"
-        )
-        val grades = listOf("A", "B", "C")
-        val habitats = listOf(
-            "Deciduous trees, logs",
-            "Hardwood logs and stumps",
-            "Compost, grasslands",
-            "Forest floors, near oaks",
-            "Coniferous forests"
-        )
-        val nutrients = listOf(
-            "Protein, Vitamin B, Potassium, Fiber",
-            "Vitamin D, Selenium, Copper, Pantothenic acid",
-            "Riboflavin, Niacin, Selenium, Potassium",
-            "Antioxidants, Beta-carotene, Vitamin C",
-            "Iron, Zinc, Magnesium, Folate"
-        )
+    private fun setupClickListeners() {
+        binding.btnShare.setOnClickListener {
+            shareResult()
+        }
 
-        val randomSpecies = edibleSpecies.random()
-        val randomGrade = "Grade ${grades.random()}"
-        val randomHabitat = habitats.random()
-        val randomNutrients = nutrients.random()
+        binding.btnTakeAnother.setOnClickListener {
+            startActivity(Intent(this, CameraActivity::class.java))
+            finish()
+        }
 
-        // Update UI for edible mushroom
-        binding.speciesTextView.text = randomSpecies
-        binding.speciesTextView.setTextColor(ContextCompat.getColor(this, R.color.text_primary))
+        binding.btnViewHistory.setOnClickListener {
+            startActivity(Intent(this, HistoryActivity::class.java))
+            finish()
+        }
 
-        binding.typeTextView.text = getString(R.string.edible)
-        binding.typeTextView.setTextColor(ContextCompat.getColor(this, R.color.primary_green))
+        binding.btnBackHome.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
+            finish()
+        }
 
-        binding.gradeTextView.text = randomGrade
-        binding.habitatTextView.text = randomHabitat
-        binding.nutrientsTextView.text = randomNutrients
+        binding.btnMoreInfo.setOnClickListener {
+            showMoreInfoDialog()
+        }
+    }
 
-        // Show all fields for edible mushrooms
-        binding.gradeLayout.visibility = View.VISIBLE
-        binding.nutrientsLayout.visibility = View.VISIBLE
+    private fun shareResult() {
+        val shareText = buildString {
+            append("Mushroom Classification Result\n\n")
+            append("Species: $className\n")
+            append("Confidence: ${String.format(Locale.getDefault(), "%.2f%%", confidence * 100)}\n")
+            append("Safety: ${if (isPoisonous) "⚠️ POISONOUS" else "✓ SAFE"}\n")
+            grade?.let { append("Grade: $it\n") }
+            append("\nGenerated by Mushroom Grader App")
+        }
 
-        // Use normal card background
-        binding.infoCard.setCardBackgroundColor(ContextCompat.getColor(this, R.color.background_white))
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, shareText)
+            putExtra(Intent.EXTRA_SUBJECT, "Mushroom Classification: $className")
+        }
+
+        startActivity(Intent.createChooser(shareIntent, "Share Result"))
+    }
+
+    private fun showMoreInfoDialog() {
+        val message = mlModelHelper.getMushroomInfo(classId)
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.detailed_information)
+            .setMessage(message)
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        finish()
+        return true
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mlModelHelper.close()
     }
 }

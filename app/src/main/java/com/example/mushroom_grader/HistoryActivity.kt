@@ -1,149 +1,311 @@
 package com.example.mushroom_grader
 
-
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.LinearLayout
+import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
-import androidx.core.content.ContextCompat
-import com.yourpackage.mushroomgrader.databinding.ActivityHistoryBinding
-import java.text.SimpleDateFormat
-import java.util.*
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.mushroom_grader.database.AppDatabase
+import com.example.mushroom_grader.databinding.ActivityHistoryBinding
+import com.example.mushroom_grader.ml.ClassificationResult
+import com.google.android.material.card.MaterialCardView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class HistoryActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityHistoryBinding
+    private lateinit var historyAdapter: HistoryAdapter
+    private val historyList = mutableListOf<ClassificationResult>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Setup toolbar
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = getString(R.string.analysis_history)
+
+        setupRecyclerView()
         setupClickListeners()
-        loadHistoryData()
+        loadHistory()
+    }
+
+    private fun setupRecyclerView() {
+        historyAdapter = HistoryAdapter(historyList) { result ->
+            showResultDetail(result)
+        }
+
+        binding.recyclerView.apply {
+            layoutManager = LinearLayoutManager(this@HistoryActivity)
+            adapter = historyAdapter
+        }
     }
 
     private fun setupClickListeners() {
-        binding.backButton.setOnClickListener {
-            finish()
+        // Clear all button
+        binding.btnClearAll.setOnClickListener {
+            showClearConfirmationDialog()
+        }
+
+        // Filter buttons
+        binding.chipAll.setOnClickListener {
+            loadHistory()
+        }
+
+        binding.chipPoisonous.setOnClickListener {
+            filterPoisonous()
+        }
+
+        binding.chipEdible.setOnClickListener {
+            filterEdible()
         }
     }
 
-    private fun loadHistoryData() {
-        // TODO: Load actual data from storage/database
-        // For now, create sample history items
-        createSampleHistoryItems()
-    }
+    private fun loadHistory() {
+        binding.progressBar.visibility = View.VISIBLE
+        binding.emptyState.visibility = View.GONE
 
-    private fun createSampleHistoryItems() {
-        val sampleHistory = listOf(
-            HistoryItem("Oyster Mushroom", "Edible", "Grade A", "Dec 15, 2024 - 2:30 PM", false),
-            HistoryItem("Death Cap", "Poisonous", "", "Dec 14, 2024 - 10:15 AM", true),
-            HistoryItem("Button Mushroom", "Edible", "Grade B", "Dec 13, 2024 - 4:45 PM", false),
-            HistoryItem("Shiitake", "Edible", "Grade A", "Dec 12, 2024 - 11:20 AM", false)
-        )
+        lifecycleScope.launch {
+            try {
+                val results = withContext(Dispatchers.IO) {
+                    val database = AppDatabase.getDatabase(applicationContext)
+                    database.resultDao().getAllResults()
+                }
 
-        // Hide the "no history" placeholder
-        binding.noHistoryLayout.visibility = View.GONE
+                historyList.clear()
+                historyList.addAll(results)
+                historyAdapter.notifyItemRangeChanged(0, historyList.size)
 
-        // Add history items to container
-        for (item in sampleHistory) {
-            addHistoryItemToContainer(item)
-        }
-    }
+                binding.progressBar.visibility = View.GONE
 
-    private fun addHistoryItemToContainer(item: HistoryItem) {
-        val cardView = CardView(this).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                setMargins(0, 0, 0, 32)
+                if (historyList.isEmpty()) {
+                    binding.emptyState.visibility = View.VISIBLE
+                    binding.recyclerView.visibility = View.GONE
+                } else {
+                    binding.emptyState.visibility = View.GONE
+                    binding.recyclerView.visibility = View.VISIBLE
+                }
+
+                updateStats(results)
+
+            } catch (e: Exception) {
+                binding.progressBar.visibility = View.GONE
+                showError(getString(R.string.error_load_history, e.message))
             }
-            radius = 12f
-            cardElevation = 3f
-            setCardBackgroundColor(ContextCompat.getColor(context,
-                if (item.isPoisonous) R.color.danger_red else R.color.background_white
-            ))
         }
-
-        val contentLayout = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            setPadding(48, 48, 48, 48)
-            gravity = android.view.Gravity.CENTER_VERTICAL
-        }
-
-        // Species and details
-        val textContainer = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-        }
-
-        val speciesText = TextView(this).apply {
-            text = item.species
-            textSize = 16f
-            setTypeface(typeface, android.graphics.Typeface.BOLD)
-            setTextColor(ContextCompat.getColor(context,
-                if (item.isPoisonous) R.color.white else R.color.text_primary
-            ))
-        }
-
-        val dateText = TextView(this).apply {
-            text = item.dateTime
-            textSize = 12f
-            setTextColor(ContextCompat.getColor(context,
-                if (item.isPoisonous) R.color.white else R.color.text_secondary
-            ))
-            setPadding(0, 12, 0, 6)
-        }
-
-        val statusText = TextView(this).apply {
-            text = if (item.grade.isNotEmpty()) "${item.type} • ${item.grade}" else item.type
-            textSize = 14f
-            setTextColor(ContextCompat.getColor(context,
-                if (item.isPoisonous) R.color.white else R.color.primary_green
-            ))
-        }
-
-        textContainer.addView(speciesText)
-        textContainer.addView(dateText)
-        textContainer.addView(statusText)
-
-        // Arrow icon
-        val arrowText = TextView(this).apply {
-            text = "→"
-            textSize = 20f
-            setTextColor(ContextCompat.getColor(context,
-                if (item.isPoisonous) R.color.white else R.color.text_secondary
-            ))
-        }
-
-        contentLayout.addView(textContainer)
-        contentLayout.addView(arrowText)
-        cardView.addView(contentLayout)
-
-        // Click listener to navigate to result view
-        cardView.setOnClickListener {
-            val intent = Intent(this, ResultActivity::class.java)
-            intent.putExtra("is_poisonous", item.isPoisonous)
-            intent.putExtra("species", item.species)
-            intent.putExtra("type", item.type)
-            intent.putExtra("grade", item.grade)
-            intent.putExtra("from_history", true)
-            startActivity(intent)
-        }
-
-        binding.historyContainer.addView(cardView)
     }
 
-    data class HistoryItem(
-        val species: String,
-        val type: String,
-        val grade: String,
-        val dateTime: String,
-        val isPoisonous: Boolean
-    )
+    private fun filterPoisonous() {
+        binding.progressBar.visibility = View.VISIBLE
+
+        lifecycleScope.launch {
+            try {
+                val results = withContext(Dispatchers.IO) {
+                    val database = AppDatabase.getDatabase(applicationContext)
+                    database.resultDao().getPoisonousResults()
+                }
+
+                historyList.clear()
+                historyList.addAll(results)
+                historyAdapter.notifyItemRangeChanged(0, historyList.size)
+
+                binding.progressBar.visibility = View.GONE
+
+                if (historyList.isEmpty()) {
+                    binding.emptyState.visibility = View.VISIBLE
+                    binding.recyclerView.visibility = View.GONE
+                } else {
+                    binding.emptyState.visibility = View.GONE
+                    binding.recyclerView.visibility = View.VISIBLE
+                }
+
+            } catch (e: Exception) {
+                binding.progressBar.visibility = View.GONE
+                showError(getString(R.string.error_filter, e.message))
+            }
+        }
+    }
+
+    private fun filterEdible() {
+        binding.progressBar.visibility = View.VISIBLE
+
+        lifecycleScope.launch {
+            try {
+                val results = withContext(Dispatchers.IO) {
+                    val database = AppDatabase.getDatabase(applicationContext)
+                    database.resultDao().getEdibleResults()
+                }
+
+                historyList.clear()
+                historyList.addAll(results)
+                historyAdapter.notifyItemRangeChanged(0, historyList.size)
+
+                binding.progressBar.visibility = View.GONE
+
+                if (historyList.isEmpty()) {
+                    binding.emptyState.visibility = View.VISIBLE
+                    binding.recyclerView.visibility = View.GONE
+                } else {
+                    binding.emptyState.visibility = View.GONE
+                    binding.recyclerView.visibility = View.VISIBLE
+                }
+
+            } catch (e: Exception) {
+                binding.progressBar.visibility = View.GONE
+                showError(getString(R.string.error_filter, e.message))
+            }
+        }
+    }
+
+    private fun updateStats(results: List<ClassificationResult>) {
+        val total = results.size
+        val poisonous = results.count { it.isPoisonous }
+        val edible = results.count { !it.isPoisonous }
+
+        binding.tvTotal.text = getString(R.string.total_format, total)
+        binding.tvPoisonous.text = getString(R.string.poisonous_format, poisonous)
+        binding.tvEdible.text = getString(R.string.edible_format, edible)
+    }
+
+    private fun showResultDetail(result: ClassificationResult) {
+        val intent = Intent(this, ResultActivity::class.java).apply {
+            putExtra("className", result.className)
+            putExtra("classId", result.classId)
+            putExtra("confidence", result.confidence)
+            putExtra("isPoisonous", result.isPoisonous)
+            putExtra("category", result.category.name)
+            putExtra("grade", result.grade)
+            putExtra("imagePath", result.imagePath)
+        }
+        startActivity(intent)
+    }
+
+    private fun showClearConfirmationDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.clear_history_title)
+            .setMessage(R.string.clear_history_message)
+            .setPositiveButton(R.string.delete_all) { _, _ ->
+                clearAllHistory()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun clearAllHistory() {
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    val database = AppDatabase.getDatabase(applicationContext)
+                    database.resultDao().deleteAll()
+                }
+
+                historyList.clear()
+                historyAdapter.notifyItemRangeChanged(0, historyList.size)
+
+                binding.emptyState.visibility = View.VISIBLE
+                binding.recyclerView.visibility = View.GONE
+
+                updateStats(emptyList())
+
+            } catch (e: Exception) {
+                showError(getString(R.string.error_clear_history, e.message))
+            }
+        }
+    }
+
+    private fun showError(message: String) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.error_title)
+            .setMessage(message)
+            .setPositiveButton(R.string.ok, null)
+            .show()
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        finish()
+        return true
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadHistory()
+    }
+}
+
+// RecyclerView Adapter
+class HistoryAdapter(
+    private val items: List<ClassificationResult>,
+    private val onItemClick: (ClassificationResult) -> Unit
+) : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {
+
+    class HistoryViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val card: MaterialCardView = view.findViewById(R.id.cardItem)
+        val image: ImageView = view.findViewById(R.id.ivMushroom)
+        val name: TextView = view.findViewById(R.id.tvName)
+        val confidence: TextView = view.findViewById(R.id.tvConfidence)
+        val timestamp: TextView = view.findViewById(R.id.tvTimestamp)
+        val safetyBadge: TextView = view.findViewById(R.id.tvSafetyBadge)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_history, parent, false)
+        return HistoryViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: HistoryViewHolder, position: Int) {
+        val item = items[position]
+        val context = holder.itemView.context
+
+        // Set mushroom name
+        holder.name.text = item.className
+
+        // Set confidence
+        holder.confidence.text = item.getConfidencePercentage()
+
+        // Set timestamp
+        holder.timestamp.text = item.getFormattedTimestamp()
+
+        // Set safety badge
+        if (item.isPoisonous) {
+            holder.safetyBadge.text = context.getString(R.string.badge_poisonous)
+            holder.safetyBadge.setBackgroundColor(
+                context.getColor(android.R.color.holo_red_dark)
+            )
+        } else {
+            holder.safetyBadge.text = context.getString(R.string.badge_safe)
+            holder.safetyBadge.setBackgroundColor(
+                context.getColor(android.R.color.holo_green_dark)
+            )
+        }
+
+        // Load image
+        item.imagePath?.let { path ->
+            try {
+                val bitmap = BitmapFactory.decodeFile(path)
+                holder.image.setImageBitmap(bitmap)
+            } catch (e: Exception) {
+                holder.image.setImageResource(R.mipmap.ic_launcher)
+            }
+        }
+
+        // Click listener
+        holder.card.setOnClickListener {
+            onItemClick(item)
+        }
+    }
+
+    override fun getItemCount() = items.size
 }

@@ -26,4 +26,77 @@
     <string name="analysis_history">Analysis History</string>
     <string name="no_history">No analysis history yet</string>
     <string name="saved_successfully">Analysis saved successfully</string>
+    <!-- MainActivity strings -->
+    <string name="welcome_message">Welcome to Mushroom Grader</string>
+    <string name="app_description">Identify and grade mushrooms using AI. Take a photo or select from gallery to get started.</string>
+
+    <string name="class_id_format">Species: %s</string>
+    <string name="confidence_format">Confidence: %s%%</string>
+
+
+    <!-- ResultActivity Strings -->
+    <string name="classification_result">Classification Result</string>
+    <string name="danger_poisonous">⚠️ DANGER - POISONOUS</string>
+    <string name="poisonous_warning">DO NOT CONSUME! This mushroom is toxic and can cause serious harm or death.</string>
+    <string name="warning_inedible">⚠️ INEDIBLE</string>
+    <string name="inedible_warning">This mushroom is not recommended for consumption.</string>
+    <string name="safe_to_eat">✓ SAFE TO EAT</string>
+    <string name="safe_warning">This mushroom is edible and safe for consumption.</string>
+    <string name="grade_premium">Premium quality - Best for sale</string>
+    <string name="grade_good">Good quality - Suitable for sale</string>
+    <string name="grade_fair">Fair quality - Can be sold</string>
+    <string name="grade_defective">Has defects - Not recommended for sale</string>
+    <string name="category_edible">Category: Edible Mushroom</string>
+    <string name="category_poisonous">Category: Poisonous Mushroom</string>
+    <string name="category_inedible">Category: Inedible Mushroom</string>
+    <string name="category_unknown">Category: Unknown</string>
+    <string name="detailed_information">Detailed Information</string>
+
+
+    <!-- HistoryActivity Strings -->
+    <string name="total_format">Total: %d</string>
+    <string name="poisonous_format">Poisonous: %d</string>
+    <string name="edible_format">Edible: %d</string>
+    <string name="badge_poisonous">⚠️ POISONOUS</string>
+    <string name="badge_safe">✓ SAFE</string>
+    <string name="clear_history_title">Clear All History?</string>
+    <string name="clear_history_message">This will permanently delete all classification history. This action cannot be undone.</string>
+    <string name="delete_all">Delete All</string>
+    <string name="error_title">Error</string>
+    <string name="error_load_history">Failed to load history: %s</string>
+    <string name="error_filter">Failed to filter results: %s</string>
+    <string name="error_clear_history">Failed to clear history: %s</string>
+
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- GalleryProcessActivity Strings -->
+    <string name="processing_image">Processing Image</string>
+    <string name="error_no_image">No image selected</string>
+    <string name="error_classification_failed">Could not classify mushroom. Please try again with a clearer image.</string>
+    <string name="error_processing">Processing failed: %s</string>
+
+    <!-- AboutActivity Strings -->
+    <string name="about_title">About</string>
+    <string name="version_format">Version %s</string>
+    <string name="version_default">Version 1.0</string>
+
+
+    <string name="technical_details">Model: YOLOv8 Classification\nInput Size: 256×256 pixels\nClasses: 12 mushroom types\nAccuracy: 97.7% (top-1)\nFramework: TensorFlow Lite\nPlatform: Android (API 29+)</string>
+
+    <string name="app_credits">Developed by:\n• Ayana Jade F. Alejo\n• Alfaith Mae M. Luzon\n• Justine Jose B. Salvador\n\nAdviser:\n• Jaydee C. Ballaho, MIT\n\nDepartment of Computer Science\nCollege of Computing Studies\nWestern Mindanao State University\nZamboanga City\n\n© 2025-2026 All Rights Reserved</string>
+
+    <string name="app_disclaimer">⚠️ IMPORTANT DISCLAIMER:\n\nThis application is for educational and informational purposes only. While our AI model achieves high accuracy, it should NOT be the sole basis for determining mushroom safety.\n\nALWAYS:\n• Consult with mycology experts\n• Cross-reference with field guides\n• Never consume wild mushrooms without expert verification\n• Seek immediate medical attention if poisoning is suspected\n\nThe developers assume no liability for any consequences resulting from the use of this application.</string>
+
+    <string name="email_subject">Mushroom Grader App Inquiry</string>
+    <string name="send_email">Send Email</string>
+    <string name="share_app">Share App</string>
+
+    <string name="share_text">Check out Mushroom Grader - An AI-powered app for mushroom identification!\n\nFeatures:\n• Identify 12 mushroom species\n• Detect poisonous mushrooms\n• Grade mushroom quality\n• 97.7% accuracy\n\nDownload: [App Store Link]</string>
+
+
+    <!-- Gallery Process Strings -->
+    <string name="selected_mushroom_image">Selected mushroom image</string>
+    <string name="analyzing_mushroom">Analyzing mushroom…</string>
+
 </resources>

@@ -1,50 +1,72 @@
 package com.example.mushroom_grader
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
-import android.net.Uri
-import java.io.File
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.mushroom_grader.databinding.ActivityCameraBinding
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import com.example.mushroom_grader.ml.ImageProcessor
+import com.example.mushroom_grader.ml.MLModelHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 class CameraActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityCameraBinding
+    private lateinit var imageProcessor: ImageProcessor
+    private lateinit var mlModelHelper: MLModelHelper
+
     private var imageCapture: ImageCapture? = null
-    private lateinit var cameraExecutor: ExecutorService
-    private var lensFacing: Int = CameraSelector.LENS_FACING_BACK
+    private var cameraProvider: ProcessCameraProvider? = null
+    private var camera: Camera? = null
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            startCamera()
+        } else {
+            Toast.makeText(this, "Camera permission is required", Toast.LENGTH_SHORT).show()
+            finish()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        startCamera()
+        imageProcessor = ImageProcessor(this)
+        mlModelHelper = MLModelHelper(this)
+
+        // Check camera permission
+        if (allPermissionsGranted()) {
+            startCamera()
+        } else {
+            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+
         setupClickListeners()
-        cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
     private fun setupClickListeners() {
-        binding.captureButton.setOnClickListener {
+        binding.btnCapture.setOnClickListener {
             takePhoto()
         }
 
-        binding.backButton.setOnClickListener {
+        binding.btnClose.setOnClickListener {
             finish()
-        }
-
-        binding.switchCameraButton.setOnClickListener {
-            lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK) {
-                CameraSelector.LENS_FACING_FRONT
-            } else {
-                CameraSelector.LENS_FACING_BACK
-            }
-            startCamera()
         }
     }
 
@@ -52,64 +74,145 @@ class CameraActivity : AppCompatActivity() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener({
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+            try {
+                cameraProvider = cameraProviderFuture.get()
+                bindCameraUseCases()
+            } catch (e: Exception) {
+                Toast.makeText(this, "Failed to start camera: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }, ContextCompat.getMainExecutor(this))
+    }
 
-            val preview = Preview.Builder().build().also {
+    private fun bindCameraUseCases() {
+        val cameraProvider = cameraProvider ?: return
+
+        // Preview
+        val preview = Preview.Builder()
+            .build()
+            .also {
                 it.setSurfaceProvider(binding.previewView.surfaceProvider)
             }
 
-            imageCapture = ImageCapture.Builder().build()
+        // Image capture
+        imageCapture = ImageCapture.Builder()
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+            .build()
 
-            val cameraSelector = CameraSelector.Builder()
-                .requireLensFacing(lensFacing)
-                .build()
+        // Select back camera as default
+        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
-            try {
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture
-                )
-            } catch (exc: Exception) {
-                Log.e("CameraActivity", "Use case binding failed", exc)
-            }
+        try {
+            // Unbind all use cases before rebinding
+            cameraProvider.unbindAll()
 
-        }, ContextCompat.getMainExecutor(this))
+            // Bind use cases to camera
+            camera = cameraProvider.bindToLifecycle(
+                this,
+                cameraSelector,
+                preview,
+                imageCapture
+            )
+
+        } catch (e: Exception) {
+            Toast.makeText(this, "Failed to bind camera: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun takePhoto() {
         val imageCapture = imageCapture ?: return
 
-        // Disable UI while capturing
-        binding.captureButton.isEnabled = false
+        // Show progress
+        binding.progressBar.visibility = android.view.View.VISIBLE
+        binding.btnCapture.isEnabled = false
 
-        val photoFile = File(externalCacheDir,
-            "mushroom-${System.currentTimeMillis()}.jpg")
-
+        // Create output file
+        val photoFile = createFile()
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
+        // Capture image
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
-                override fun onError(exc: ImageCaptureException) {
-                    binding.captureButton.isEnabled = true
-                    Log.e("CameraActivity", "Photo capture failed: ${exc.message}", exc)
+                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    processAndClassifyImage(photoFile)
                 }
 
-                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    val savedUri = Uri.fromFile(photoFile)
+                override fun onError(exception: ImageCaptureException) {
+                    binding.progressBar.visibility = android.view.View.GONE
+                    binding.btnCapture.isEnabled = true
+                    Toast.makeText(
+                        this@CameraActivity,
+                        "Photo capture failed: ${exception.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        )
+    }
+
+    private fun processAndClassifyImage(imageFile: File) {
+        lifecycleScope.launch {
+            try {
+                val result = withContext(Dispatchers.Default) {
+                    // Process image
+                    val bitmap = imageProcessor.processImage(imageFile.absolutePath)
+
+                    // Classify using ML model
+                    mlModelHelper.classifyImage(bitmap)
+                }
+
+                // Check if result is not null
+                if (result != null) {
+                    // Navigate to result screen
                     val intent = Intent(this@CameraActivity, ResultActivity::class.java).apply {
-                        putExtra("image_uri", savedUri.toString())
-                        putExtra("is_poisonous", false) // TODO: replace with real inference
+                        putExtra("className", result.className)
+                        putExtra("classId", result.classId)
+                        putExtra("confidence", result.confidence)
+                        putExtra("isPoisonous", result.isPoisonous)
+                        putExtra("category", result.category.name)
+                        putExtra("grade", result.grade)
+                        putExtra("imagePath", imageFile.absolutePath)
                     }
+
                     startActivity(intent)
                     finish()
+                } else {
+                    // Handle null result
+                    binding.progressBar.visibility = android.view.View.GONE
+                    binding.btnCapture.isEnabled = true
+                    Toast.makeText(
+                        this@CameraActivity,
+                        "Classification failed: No result",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-            })
+
+            } catch (e: Exception) {
+                binding.progressBar.visibility = android.view.View.GONE
+                binding.btnCapture.isEnabled = true
+                Toast.makeText(
+                    this@CameraActivity,
+                    "Classification failed: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
     }
+
+    private fun createFile(): File {
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+        val storageDir = getExternalFilesDir(null)
+        return File.createTempFile("MUSHROOM_${timeStamp}_", ".jpg", storageDir)
+    }
+
+    private fun allPermissionsGranted() = ContextCompat.checkSelfPermission(
+        this, Manifest.permission.CAMERA
+    ) == PackageManager.PERMISSION_GRANTED
 
     override fun onDestroy() {
         super.onDestroy()
-        cameraExecutor.shutdown()
+        cameraProvider?.unbindAll()
+        mlModelHelper.close()
     }
 }
