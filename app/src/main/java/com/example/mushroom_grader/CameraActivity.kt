@@ -7,29 +7,31 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.*
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.mushroom_grader.databinding.ActivityCameraBinding
 import com.example.mushroom_grader.ml.ImageProcessor
 import com.example.mushroom_grader.ml.MLModelHelper
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 class CameraActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCameraBinding
     private lateinit var imageProcessor: ImageProcessor
     private lateinit var mlModelHelper: MLModelHelper
-
     private var imageCapture: ImageCapture? = null
-    private var cameraProvider: ProcessCameraProvider? = null
-    private var camera: Camera? = null
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -50,7 +52,6 @@ class CameraActivity : AppCompatActivity() {
         imageProcessor = ImageProcessor(this)
         mlModelHelper = MLModelHelper(this)
 
-        // Check camera permission
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -75,44 +76,35 @@ class CameraActivity : AppCompatActivity() {
 
         cameraProviderFuture.addListener({
             try {
-                cameraProvider = cameraProviderFuture.get()
-                bindCameraUseCases()
+                val cameraProvider = cameraProviderFuture.get()
+                bindCameraUseCases(cameraProvider)
             } catch (e: Exception) {
                 Toast.makeText(this, "Failed to start camera: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun bindCameraUseCases() {
-        val cameraProvider = cameraProvider ?: return
-
-        // Preview
+    private fun bindCameraUseCases(cameraProvider: ProcessCameraProvider) {
         val preview = Preview.Builder()
             .build()
             .also {
                 it.setSurfaceProvider(binding.previewView.surfaceProvider)
             }
 
-        // Image capture
         imageCapture = ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .build()
 
-        // Select back camera as default
         val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
         try {
-            // Unbind all use cases before rebinding
             cameraProvider.unbindAll()
-
-            // Bind use cases to camera
-            camera = cameraProvider.bindToLifecycle(
+            cameraProvider.bindToLifecycle(
                 this,
                 cameraSelector,
                 preview,
                 imageCapture
             )
-
         } catch (e: Exception) {
             Toast.makeText(this, "Failed to bind camera: ${e.message}", Toast.LENGTH_SHORT).show()
         }
@@ -121,15 +113,12 @@ class CameraActivity : AppCompatActivity() {
     private fun takePhoto() {
         val imageCapture = imageCapture ?: return
 
-        // Show progress
         binding.progressBar.visibility = android.view.View.VISIBLE
         binding.btnCapture.isEnabled = false
 
-        // Create output file
         val photoFile = createFile()
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
-        // Capture image
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(this),
@@ -155,37 +144,16 @@ class CameraActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.Default) {
-                    // Process image
                     val bitmap = imageProcessor.processImage(imageFile.absolutePath)
-
-                    // Classify using ML model
                     mlModelHelper.classifyImage(bitmap)
                 }
 
-                // Check if result is not null
                 if (result != null) {
-                    // Navigate to result screen
-                    val intent = Intent(this@CameraActivity, ResultActivity::class.java).apply {
-                        putExtra("className", result.className)
-                        putExtra("classId", result.classId)
-                        putExtra("confidence", result.confidence)
-                        putExtra("isPoisonous", result.isPoisonous)
-                        putExtra("category", result.category.name)
-                        putExtra("grade", result.grade)
-                        putExtra("imagePath", imageFile.absolutePath)
-                    }
-
-                    startActivity(intent)
-                    finish()
+                    navigateToResult(result, imageFile)
                 } else {
-                    // Handle null result
                     binding.progressBar.visibility = android.view.View.GONE
                     binding.btnCapture.isEnabled = true
-                    Toast.makeText(
-                        this@CameraActivity,
-                        "Classification failed: No result",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    showNonMushroomError()
                 }
 
             } catch (e: Exception) {
@@ -200,6 +168,36 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
+    private fun showNonMushroomError() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("❌ Not a Mushroom Detected")
+            .setMessage(
+                "The image quality or content does not appear to be a mushroom.\n\n" +
+                        "This could mean:\n" +
+                        "• The image shows a non-mushroom object\n" +
+                        "• The mushroom is partially visible or obscured\n" +
+                        "• The image is unclear or out of focus\n\n" +
+                        "Please retake a clearer picture of an entire mushroom."
+            )
+            .setPositiveButton("Try Again") { _, _ -> }
+            .setNegativeButton("Cancel") { _, _ -> finish() }
+            .show()
+    }
+
+    private fun navigateToResult(result: com.example.mushroom_grader.ml.ClassificationResult, imageFile: File) {
+        val intent = Intent(this, ResultActivity::class.java).apply {
+            putExtra("className", result.className)
+            putExtra("classId", result.classId)
+            putExtra("confidence", result.confidence)
+            putExtra("isPoisonous", result.isPoisonous)
+            putExtra("category", result.category.name)
+            putExtra("grade", result.grade)
+            putExtra("imagePath", imageFile.absolutePath)
+        }
+        startActivity(intent)
+        finish()
+    }
+
     private fun createFile(): File {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
         val storageDir = getExternalFilesDir(null)
@@ -212,7 +210,6 @@ class CameraActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        cameraProvider?.unbindAll()
         mlModelHelper.close()
     }
 }

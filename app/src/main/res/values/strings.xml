@@ -82,7 +82,7 @@
     <string name="version_default">Version 1.0</string>
 
 
-    <string name="technical_details">Model: YOLOv8 Classification\nInput Size: 256×256 pixels\nClasses: 12 mushroom types\nAccuracy: 97.7% (top-1)\nFramework: TensorFlow Lite\nPlatform: Android (API 29+)</string>
+    <string name="technical_details">Real-time mushroom classification\n• Detailed species information\n• Safety warnings for poisonous species\n• Classification history\n• Camera and gallery support\n• Offline processing</string>
 
     <string name="app_credits">Developed by:\n• Ayana Jade F. Alejo\n• Alfaith Mae M. Luzon\n• Justine Jose B. Salvador\n\nAdviser:\n• Jaydee C. Ballaho, MIT\n\nDepartment of Computer Science\nCollege of Computing Studies\nWestern Mindanao State University\nZamboanga City\n\n© 2025-2026 All Rights Reserved</string>
 
@@ -98,5 +98,9 @@
     <!-- Gallery Process Strings -->
     <string name="selected_mushroom_image">Selected mushroom image</string>
     <string name="analyzing_mushroom">Analyzing mushroom…</string>
+
+    <!-- Add these to your res/values/strings.xml -->
+    <string name="cannot_send_email">Cannot send email</string>
+
 
 </resources>

@@ -28,7 +28,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "mushroom_grader_database"
                 )
-                    .fallbackToDestructiveMigration() // For development only
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance

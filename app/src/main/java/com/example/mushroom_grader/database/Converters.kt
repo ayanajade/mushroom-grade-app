@@ -4,6 +4,7 @@ import androidx.room.TypeConverter
 import com.example.mushroom_grader.ml.MushroomCategory
 
 class Converters {
+
     @TypeConverter
     fun fromMushroomCategory(category: MushroomCategory): String {
         return category.name
@@ -11,6 +12,10 @@ class Converters {
 
     @TypeConverter
     fun toMushroomCategory(value: String): MushroomCategory {
-        return MushroomCategory.valueOf(value)
+        return try {
+            MushroomCategory.valueOf(value)
+        } catch (e: IllegalArgumentException) {
+            MushroomCategory.UNKNOWN
+        }
     }
 }

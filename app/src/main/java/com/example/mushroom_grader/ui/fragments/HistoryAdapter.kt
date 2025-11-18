@@ -1,16 +1,17 @@
-package com.example.mushroom_grader.ui.fragments
+package com.example.mushroom_grader
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mushroom_grader.R
 import com.example.mushroom_grader.databinding.ItemResultBinding
 import com.example.mushroom_grader.ml.ClassificationResult
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class HistoryAdapter : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {
+class HistoryAdapter(
+    private val onItemClick: (ClassificationResult) -> Unit = {}
+) : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {
 
     private val items = mutableListOf<ClassificationResult>()
 
@@ -40,19 +41,22 @@ class HistoryAdapter : RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() 
 
     override fun getItemCount(): Int = items.size
 
-    class HistoryViewHolder(
+    inner class HistoryViewHolder(
         private val binding: ItemResultBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(result: ClassificationResult) {
-            val context = binding.root.context
             val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
             val date = dateFormat.format(Date(result.timestamp))
-            val confidenceStr = String.format(Locale.getDefault(), "%.1f", result.confidence)
+            val confidenceStr = String.format(Locale.getDefault(), "%.1f%%", result.confidence * 100)
 
-            binding.textClassId.text = context.getString(R.string.class_id_format, result.className)
-            binding.textConfidence.text = context.getString(R.string.confidence_format, confidenceStr)
+            binding.textClassId.text = result.className
+            binding.textConfidence.text = confidenceStr
             binding.textDate.text = date
+
+            binding.root.setOnClickListener {
+                onItemClick(result)
+            }
         }
     }
 }

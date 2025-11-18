@@ -3,8 +3,8 @@ package com.example.mushroom_grader
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.net.toUri
 import com.example.mushroom_grader.databinding.ActivityAboutBinding
 
 class AboutActivity : AppCompatActivity() {
@@ -14,6 +14,7 @@ class AboutActivity : AppCompatActivity() {
     companion object {
         private const val GITHUB_URL = "https://github.com/yourusername/mushroom-grader"
         private const val EMAIL_ADDRESS = "mushroom.grader@wmsu.edu.ph"
+        private const val APP_DOWNLOAD_URL = "https://www.mediafire.com/file/24g0fa6slm2mdms/MushroomGrader-debug.apk/file"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,100 +22,102 @@ class AboutActivity : AppCompatActivity() {
         binding = ActivityAboutBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Setup toolbar
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = getString(R.string.about_title)
+        supportActionBar?.title = "About"
 
-        setupContent()
+        setupVersion()
         setupClickListeners()
     }
 
-    private fun setupContent() {
-        // App version
+    private fun setupVersion() {
         try {
             val packageInfo = packageManager.getPackageInfo(packageName, 0)
-            binding.tvVersion.text = getString(R.string.version_format, packageInfo.versionName)
-        } catch (e: Exception) {
-            binding.tvVersion.text = getString(R.string.version_default)
+            binding.tvVersion.text = "Version ${packageInfo.versionName}"
+        } catch (_: Exception) {
+            binding.tvVersion.text = "Version 1.0.0"
         }
-
-        // App description
-        binding.tvDescription.text = getString(R.string.app_description)
-
-        // Technical details
-        binding.tvTechnicalDetails.text = getString(R.string.technical_details)
-
-        // Credits
-        binding.tvCredits.text = getString(R.string.app_credits)
-
-        // Disclaimer
-        binding.tvDisclaimer.text = getString(R.string.app_disclaimer)
     }
 
     private fun setupClickListeners() {
-        // GitHub repository
+        // GitHub button
         binding.btnGithub.setOnClickListener {
             openUrl(GITHUB_URL)
         }
 
-        // Contact/Email
-        binding.btnContact.setOnClickListener {
+        // Email button
+        binding.btnEmail.setOnClickListener {
             sendEmail()
         }
 
-        // Share app
+        // Share App button (NEW!)
         binding.btnShare.setOnClickListener {
             shareApp()
-        }
-
-        // Rate app
-        binding.btnRate.setOnClickListener {
-            rateApp()
         }
     }
 
     private fun openUrl(url: String) {
         try {
-            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
             startActivity(intent)
-        } catch (e: Exception) {
-            // Handle error - could show toast or dialog
+        } catch (_: Exception) {
+            Toast.makeText(
+                this,
+                "Cannot open URL",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
     private fun sendEmail() {
-        val intent = Intent(Intent.ACTION_SENDTO).apply {
-            data = "mailto:$EMAIL_ADDRESS".toUri()
-            putExtra(Intent.EXTRA_SUBJECT, getString(R.string.email_subject))
-        }
-
         try {
-            startActivity(Intent.createChooser(intent, getString(R.string.send_email)))
-        } catch (e: Exception) {
-            // Handle error
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "message/rfc822"
+                putExtra(Intent.EXTRA_EMAIL, arrayOf(EMAIL_ADDRESS))
+                putExtra(Intent.EXTRA_SUBJECT, "Mushroom Grader Feedback")
+            }
+            startActivity(Intent.createChooser(intent, "Send Email"))
+        } catch (_: Exception) {
+            Toast.makeText(
+                this,
+                "Cannot send email",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
+    // ✅ NEW: Share App Function
     private fun shareApp() {
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, getString(R.string.share_text))
-        }
-
-        startActivity(Intent.createChooser(intent, getString(R.string.share_app)))
-    }
-
-    private fun rateApp() {
-        val packageName = packageName
         try {
-            val intent = Intent(Intent.ACTION_VIEW, "market://details?id=$packageName".toUri())
-            startActivity(intent)
-        } catch (e: Exception) {
-            // If Play Store not available, open in browser
-            val intent = Intent(Intent.ACTION_VIEW,
-                "https://play.google.com/store/apps/details?id=$packageName".toUri())
-            startActivity(intent)
+            val shareText = buildString {
+                append("🍄 Check out Mushroom Grader App!\n\n")
+                append("An AI-powered mobile application to classify mushroom species ")
+                append("using advanced machine learning technology.\n\n")
+                append("📥 Download here:\n")
+                append(APP_DOWNLOAD_URL)
+                append("\n\n")
+                append("Features:\n")
+                append("• Real-time mushroom classification\n")
+                append("• Detailed species information\n")
+                append("• Safety warnings for poisonous species\n")
+                append("• Classification history\n")
+                append("• Camera and gallery support\n")
+                append("• Offline processing")
+            }
+
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, shareText)
+                putExtra(Intent.EXTRA_SUBJECT, "Mushroom Grader - AI Mushroom Classification App")
+            }
+
+            startActivity(Intent.createChooser(shareIntent, "Share Mushroom Grader App"))
+        } catch (_: Exception) {
+            Toast.makeText(
+                this,
+                "Cannot share app",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 

@@ -96,7 +96,7 @@
                         android:id="@+id/tvDescription"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Loading..."
+                        android:text="@string/about_description"
                         android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                         android:lineSpacingExtra="4dp"
                         tools:ignore="HardcodedText" />
@@ -131,7 +131,7 @@
                         android:id="@+id/tvTechnicalDetails"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Loading..."
+                        android:text="@string/technical_details"
                         android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                         android:fontFamily="monospace"
                         android:lineSpacingExtra="4dp"
@@ -167,7 +167,7 @@
                         android:id="@+id/tvCredits"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Loading..."
+                        android:text="@string/app_credits"
                         android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                         android:lineSpacingExtra="4dp"
                         tools:ignore="HardcodedText" />
@@ -204,7 +204,7 @@
                         android:id="@+id/tvDisclaimer"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Loading..."
+                        android:text="@string/app_disclaimer"
                         android:textAppearance="@style/TextAppearance.Material3.BodySmall"
                         android:lineSpacingExtra="4dp"
                         tools:ignore="HardcodedText" />
@@ -230,11 +230,11 @@
                     tools:ignore="HardcodedText" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnContact"
+                    android:id="@+id/btnEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:text="Contact Us"
+                    android:text="Email us"
                     app:icon="@android:drawable/ic_dialog_email"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     tools:ignore="HardcodedText" />
@@ -246,15 +246,6 @@
                     android:layout_marginBottom="8dp"
                     android:text="Share App"
                     app:icon="@android:drawable/ic_menu_share"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    tools:ignore="HardcodedText" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnRate"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Rate on Play Store"
-                    app:icon="@android:drawable/btn_star_big_on"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     tools:ignore="HardcodedText" />
 

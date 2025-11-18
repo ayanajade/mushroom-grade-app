@@ -4,21 +4,24 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.View
-
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-
+import androidx.lifecycle.lifecycleScope
+import com.example.mushroom_grader.database.AppDatabase
 import com.example.mushroom_grader.databinding.ActivityResultBinding
+import com.example.mushroom_grader.ml.ClassificationResult
 import com.example.mushroom_grader.ml.MLModelHelper
 import com.example.mushroom_grader.ml.MushroomCategory
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Locale
 
 class ResultActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityResultBinding
     private lateinit var mlModelHelper: MLModelHelper
-
     private var className: String = ""
     private var classId: Int = 0
     private var confidence: Float = 0f
@@ -34,13 +37,13 @@ class ResultActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = getString(R.string.classification_result)
+        supportActionBar?.title = "Classification Result"
 
         mlModelHelper = MLModelHelper(this)
-
         getIntentData()
         displayResults()
         setupClickListeners()
+        saveToDatabase()
     }
 
     private fun getIntentData() {
@@ -55,14 +58,17 @@ class ResultActivity : AppCompatActivity() {
 
     private fun displayResults() {
         imagePath?.let {
-            val bitmap = BitmapFactory.decodeFile(it)
-            binding.ivMushroom.setImageBitmap(bitmap)
+            try {
+                val bitmap = BitmapFactory.decodeFile(it)
+                binding.ivMushroom.setImageBitmap(bitmap)
+            } catch (e: Exception) {
+                binding.ivMushroom.setImageResource(android.R.mipmap.sym_def_app_icon)
+            }
         }
 
         binding.tvMushroomName.text = className
-
         val confidencePercent = String.format(Locale.getDefault(), "%.2f%%", confidence * 100)
-        binding.tvConfidence.text = getString(R.string.confidence_format, confidencePercent)
+        binding.tvConfidence.text = "Confidence: $confidencePercent"
 
         displaySafetyStatus()
         displayGrade()
@@ -75,26 +81,28 @@ class ResultActivity : AppCompatActivity() {
                 binding.cardSafety.setCardBackgroundColor(
                     ContextCompat.getColor(this, android.R.color.holo_red_dark)
                 )
-                binding.tvSafetyTitle.text = getString(R.string.danger_poisonous)
-                binding.tvSafetyMessage.text = getString(R.string.poisonous_warning)
+                binding.tvSafetyTitle.text = "⚠️ POISONOUS"
+                binding.tvSafetyMessage.text = "This mushroom is POISONOUS and MUST NOT be consumed."
                 binding.tvSafetyTitle.setTextColor(ContextCompat.getColor(this, android.R.color.white))
                 binding.tvSafetyMessage.setTextColor(ContextCompat.getColor(this, android.R.color.white))
             }
+
             category == MushroomCategory.INEDIBLE.name -> {
                 binding.cardSafety.setCardBackgroundColor(
                     ContextCompat.getColor(this, android.R.color.holo_orange_dark)
                 )
-                binding.tvSafetyTitle.text = getString(R.string.warning_inedible)
-                binding.tvSafetyMessage.text = getString(R.string.inedible_warning)
+                binding.tvSafetyTitle.text = "⚠️ INEDIBLE"
+                binding.tvSafetyMessage.text = "This mushroom is not recommended for consumption."
                 binding.tvSafetyTitle.setTextColor(ContextCompat.getColor(this, android.R.color.white))
                 binding.tvSafetyMessage.setTextColor(ContextCompat.getColor(this, android.R.color.white))
             }
+
             else -> {
                 binding.cardSafety.setCardBackgroundColor(
                     ContextCompat.getColor(this, android.R.color.holo_green_dark)
                 )
-                binding.tvSafetyTitle.text = getString(R.string.safe_to_eat)
-                binding.tvSafetyMessage.text = getString(R.string.safe_warning)
+                binding.tvSafetyTitle.text = "✓ SAFE TO EAT"
+                binding.tvSafetyMessage.text = "This mushroom appears to be safe to consume."
                 binding.tvSafetyTitle.setTextColor(ContextCompat.getColor(this, android.R.color.white))
                 binding.tvSafetyMessage.setTextColor(ContextCompat.getColor(this, android.R.color.white))
             }
@@ -105,15 +113,6 @@ class ResultActivity : AppCompatActivity() {
         if (grade != null) {
             binding.cardGrade.visibility = View.VISIBLE
             binding.tvGradeValue.text = grade
-
-            val gradeDescription = when (grade) {
-                "Class A", "Extra" -> getString(R.string.grade_premium)
-                "Class B", "Class I" -> getString(R.string.grade_good)
-                "Class C", "Class II" -> getString(R.string.grade_fair)
-                "Defective" -> getString(R.string.grade_defective)
-                else -> ""
-            }
-            binding.tvGradeDescription.text = gradeDescription
         } else {
             binding.cardGrade.visibility = View.GONE
         }
@@ -122,14 +121,7 @@ class ResultActivity : AppCompatActivity() {
     private fun displayDetailedInfo() {
         val detailedInfo = mlModelHelper.getMushroomInfo(classId)
         binding.tvDetailedInfo.text = detailedInfo
-
-        val categoryText = when (category) {
-            MushroomCategory.EDIBLE.name -> getString(R.string.category_edible)
-            MushroomCategory.POISONOUS.name -> getString(R.string.category_poisonous)
-            MushroomCategory.INEDIBLE.name -> getString(R.string.category_inedible)
-            else -> getString(R.string.category_unknown)
-        }
-        binding.tvCategory.text = categoryText
+        binding.tvCategory.text = "Category: $category"
     }
 
     private fun setupClickListeners() {
@@ -180,12 +172,33 @@ class ResultActivity : AppCompatActivity() {
 
     private fun showMoreInfoDialog() {
         val message = mlModelHelper.getMushroomInfo(classId)
-
         MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.detailed_information)
+            .setTitle("Detailed Information")
             .setMessage(message)
             .setPositiveButton("OK", null)
             .show()
+    }
+
+    private fun saveToDatabase() {
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    val result = ClassificationResult(
+                        className = className,
+                        classId = classId,
+                        confidence = confidence,
+                        isPoisonous = isPoisonous,
+                        category = MushroomCategory.valueOf(category),
+                        grade = grade,
+                        imagePath = imagePath
+                    )
+                    val database = AppDatabase.getDatabase(applicationContext)
+                    database.resultDao().insertResult(result)
+                }
+            } catch (e: Exception) {
+                // Silent fail for database errors
+            }
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {

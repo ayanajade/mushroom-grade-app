@@ -14,7 +14,6 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -28,13 +27,23 @@ android {
         }
     }
 
+    // ✅ ADDED: Custom APK Naming
+    applicationVariants.all {
+        outputs.all {
+            val outputImpl = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            val buildType = buildType.name
+            // Result: MushroomGrader-debug.apk or MushroomGrader-release.apk
+            outputImpl.outputFileName = "MushroomGrader-${buildType}.apk"
+        }
+    }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11  // ✅ Updated from VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_11  // ✅ Updated from VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = "11"  // ✅ Updated from "1.8"
+        jvmTarget = "11"
     }
 
     buildFeatures {
