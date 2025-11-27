@@ -12,7 +12,7 @@ class AboutActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAboutBinding
 
     companion object {
-        private const val GITHUB_URL = "https://github.com/yourusername/mushroom-grader"
+        private const val GITHUB_URL = "https://github.com/ayanajade/mushroom-grade-app"
         private const val EMAIL_ADDRESS = "mushroom.grader@wmsu.edu.ph"
         private const val APP_DOWNLOAD_URL = "https://www.mediafire.com/file/24g0fa6slm2mdms/MushroomGrader-debug.apk/file"
     }

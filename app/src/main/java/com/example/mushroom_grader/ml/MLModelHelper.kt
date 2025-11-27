@@ -14,7 +14,8 @@ class MLModelHelper(private val context: Context) {
         private const val TAG = "MLModelHelper"
         private const val MODEL_PATH = "mushroom_classifier.tflite"
         private const val INPUT_SIZE = 256
-        private const val NUM_CLASSES = 12
+        private const val NUM_CLASSES = 13  // ✅ CHANGED FROM 12 TO 13
+
         private val THRESHOLDS = listOf(
             0.90f, // High confidence - Show immediately
             0.85f, // Caution
@@ -42,7 +43,6 @@ class MLModelHelper(private val context: Context) {
 
     fun classifyImage(bitmap: Bitmap): ClassificationResult? {
         if (!isInitialized || interpreter == null) return null
-
         return try {
             val inputBuffer = preprocessImage(bitmap)
             val output = Array(1) { FloatArray(NUM_CLASSES) }
@@ -57,8 +57,10 @@ class MLModelHelper(private val context: Context) {
         val resizedBitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, true)
         val inputBuffer = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * 3)
         inputBuffer.order(ByteOrder.nativeOrder())
+
         val pixels = IntArray(INPUT_SIZE * INPUT_SIZE)
         resizedBitmap.getPixels(pixels, 0, INPUT_SIZE, 0, 0, INPUT_SIZE, INPUT_SIZE)
+
         for (pixel in pixels) {
             val r = (pixel shr 16 and 0xFF) / 255.0f
             val g = (pixel shr 8 and 0xFF) / 255.0f
@@ -67,25 +69,30 @@ class MLModelHelper(private val context: Context) {
             inputBuffer.putFloat(g)
             inputBuffer.putFloat(b)
         }
+
         return inputBuffer
     }
 
     private fun processOutput(output: FloatArray): ClassificationResult? {
         var maxIndex = -1
         var maxProb = 0f
+
         for (i in output.indices) {
             if (output[i] > maxProb) {
                 maxProb = output[i]
                 maxIndex = i
             }
         }
+
         if (maxProb < THRESHOLDS[2]) {
             return null // TOO LOW
         }
+
         return createClassificationResult(maxIndex, maxProb)
     }
 
     private fun createClassificationResult(classId: Int, confidence: Float): ClassificationResult {
+        // ✅ UPDATED: Added Oyster_Cluster at index 10
         val classes = arrayOf(
             Triple("Amanita Pantherina", true, MushroomCategory.POISONOUS),
             Triple("Amanita phalloides", true, MushroomCategory.POISONOUS),
@@ -97,18 +104,22 @@ class MLModelHelper(private val context: Context) {
             Triple("Oyster - Class A", false, MushroomCategory.EDIBLE),
             Triple("Oyster - Class B", false, MushroomCategory.EDIBLE),
             Triple("Oyster - Class C", false, MushroomCategory.EDIBLE),
-            Triple("Oyster - Defective", false, MushroomCategory.INEDIBLE),
-            Triple("Shiitake Mushroom", false, MushroomCategory.EDIBLE)
+            Triple("Oyster - Cluster", false, MushroomCategory.EDIBLE),     // ✅ NEW CLASS
+            Triple("Oyster - Defective", false, MushroomCategory.INEDIBLE), // ✅ MOVED TO INDEX 11
+            Triple("Shiitake Mushroom", false, MushroomCategory.EDIBLE)     // ✅ MOVED TO INDEX 12
         )
+
         val (name, isPoisonous, category) = if (classId in classes.indices) {
             classes[classId]
         } else {
             Triple("Unknown", false, MushroomCategory.UNKNOWN)
         }
+
         val grade = when {
             name.contains("Class A") -> "Class A"
             name.contains("Class B") -> "Class B"
             name.contains("Class C") -> "Class C"
+            name.contains("Cluster") -> "Cluster"           // ✅ NEW GRADE
             name.contains("Defective") -> "Defective"
             name == "Button Mushroom" -> "Mixed Grade"
             else -> null
@@ -178,7 +189,7 @@ class MLModelHelper(private val context: Context) {
                 - Culinary: Not eaten; used for decoration/woodcraft
             """.trimIndent()
             6 -> """
-                🍄 GANODERMA APPLANATUM (Artist’s Conk)
+                🍄 GANODERMA APPLANATUM (Artist's Conk)
                 ⚠️ NOT FOR CULINARY USE - MEDICINAL REMEDY ONLY
                 - Features: Brown crust, very woody, hard perennial bracket
                 - Habitat: On dead/dying hardwood globally
@@ -208,13 +219,21 @@ class MLModelHelper(private val context: Context) {
                 - Habitat: Older flushes, variable cultivation
             """.trimIndent()
             10 -> """
+                🍄 OYSTER MUSHROOM - CLUSTER
+                ✅ EDIBLE — MULTIPLE MUSHROOMS GROUPED
+                - Features: Multiple oyster mushrooms growing together
+                - Best Use: Separate and sort by individual grades, or cook together
+                - Habitat: Natural cluster formation in cultivation
+                - Note: May contain mixed quality mushrooms in one cluster
+            """.trimIndent()
+            11 -> """
                 🍄 OYSTER MUSHROOM - DEFECTIVE
                 ⚠️ NOT FOR CONSUMPTION
                 - Features: Soft, watery, dark spots or minor spoilage
                 - Culinary: Rejected for human food, possible animal feed use
                 - Safety: Do not use for eating!
             """.trimIndent()
-            11 -> """
+            12 -> """
                 🍄 SHIITAKE MUSHROOM (Lentinula edodes)
                 ✅ EDIBLE — MUST BE COOKED
                 - Features: Brown cap, white gills, white stem
