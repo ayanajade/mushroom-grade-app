@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mushroom_grader.databinding.ActivityStoragePredictionBinding
 import com.example.mushroom_grader.ml.ShelfLifeData
 import com.example.mushroom_grader.ml.ShelfLifePredictor
-import com.example.mushroom_grader.ml.StorageMethod
 
 /**
  * StoragePredictionActivity - Displays detailed storage predictions
@@ -60,12 +59,13 @@ class StoragePredictionActivity : AppCompatActivity() {
     }
 
     /**
-     * Load all storage predictions for the mushroom
+     * ✅ FIXED: Load all storage predictions for the mushroom
      */
     private fun loadPredictions() {
         allPredictions = ShelfLifePredictor.getAllStoragePredictions(
-            mushroomName,
-            classificationDate
+            mushroomName = mushroomName,
+            freshnessMultiplier = 1.0f,  // ✅ Default to fresh (no freshness data available here)
+            classificationDate = classificationDate
         )
     }
 
@@ -104,6 +104,7 @@ class StoragePredictionActivity : AppCompatActivity() {
             R.string.expires_on_format,
             data.getFormattedExpirationDate()
         )
+
         binding.textTemperature.text = getString(
             R.string.store_at_format,
             data.storageTemperature

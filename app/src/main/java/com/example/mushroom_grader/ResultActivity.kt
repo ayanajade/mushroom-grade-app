@@ -1,6 +1,7 @@
 package com.example.mushroom_grader
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
@@ -13,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.mushroom_grader.database.AppDatabase
 import com.example.mushroom_grader.databinding.ActivityResultBinding
 import com.example.mushroom_grader.ml.ClassificationResult
+import com.example.mushroom_grader.ml.FreshnessAnalyzer
 import com.example.mushroom_grader.ml.MLModelHelper
 import com.example.mushroom_grader.ml.MushroomCategory
 import com.example.mushroom_grader.ml.ShelfLifePredictor
@@ -28,12 +30,15 @@ import java.util.Locale
  * - Shows mushroom image and classification details
  * - Displays safety status (Edible/Poisonous/Inedible)
  * - Shows grading information
- * - Storage & shelf life predictions with freshness status for edible mushrooms
+ * - ✅ Analyzes actual mushroom freshness from image
+ * - ✅ Storage & shelf life predictions based on visual freshness
  * - Share and save functionality
  */
 class ResultActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityResultBinding
     private lateinit var mlModelHelper: MLModelHelper
+    private lateinit var freshnessAnalyzer: FreshnessAnalyzer
 
     // Classification data
     private var className: String = ""
@@ -43,6 +48,7 @@ class ResultActivity : AppCompatActivity() {
     private var category: String = ""
     private var grade: String? = null
     private var imagePath: String? = null
+    private var imageBitmap: Bitmap? = null
 
     companion object {
         private const val TAG = "ResultActivity"
@@ -53,6 +59,7 @@ class ResultActivity : AppCompatActivity() {
         Log.d(TAG, "🚀 onCreate started")
         binding = ActivityResultBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         setupToolbar()
         initializeMLModel()
         loadDataAndDisplay()
@@ -70,15 +77,16 @@ class ResultActivity : AppCompatActivity() {
     }
 
     /**
-     * Initialize ML Model Helper
+     * Initialize ML Model Helper and Freshness Analyzer
      */
     private fun initializeMLModel() {
         mlModelHelper = MLModelHelper(this)
+        freshnessAnalyzer = FreshnessAnalyzer()
+        Log.d(TAG, "✅ ML Model and Freshness Analyzer initialized")
     }
 
     /**
      * Load intent data and display all results
-     * ✅ FIXED: Only saves to database if NOT from history
      */
     private fun loadDataAndDisplay() {
         Log.d(TAG, "📥 Loading data from intent...")
@@ -87,7 +95,7 @@ class ResultActivity : AppCompatActivity() {
         displayStoragePredictions()
         setupClickListeners()
 
-        // ✅ ONLY SAVE IF NOT FROM HISTORY (prevents duplicates!)
+        // Only save if NOT from history (prevents duplicates)
         val isFromHistory = intent.getBooleanExtra("fromHistory", false)
         if (!isFromHistory) {
             Log.d(TAG, "💾 New result - saving to database")
@@ -108,6 +116,7 @@ class ResultActivity : AppCompatActivity() {
         category = intent.getStringExtra("category") ?: "INEDIBLE"
         grade = intent.getStringExtra("grade")
         imagePath = intent.getStringExtra("imagePath")
+
         Log.d(TAG, "📦 Data loaded: $className (ID: $classId, Confidence: $confidence)")
     }
 
@@ -128,12 +137,11 @@ class ResultActivity : AppCompatActivity() {
     private fun displayImage() {
         imagePath?.let { path ->
             try {
-                val bitmap = BitmapFactory.decodeFile(path)
-                binding.ivMushroom.setImageBitmap(bitmap)
+                imageBitmap = BitmapFactory.decodeFile(path)
+                binding.ivMushroom.setImageBitmap(imageBitmap)
                 Log.d(TAG, "✅ Image loaded from: $path")
             } catch (ex: Exception) {
                 Log.e(TAG, "❌ Failed to load image", ex)
-                // Fallback to default icon if image loading fails
                 binding.ivMushroom.setImageResource(android.R.mipmap.sym_def_app_icon)
             }
         }
@@ -160,6 +168,7 @@ class ResultActivity : AppCompatActivity() {
                     R.string.poisonous_message
                 )
             }
+
             category == MushroomCategory.INEDIBLE.name -> {
                 setSafetyCard(
                     android.R.color.holo_orange_dark,
@@ -167,6 +176,7 @@ class ResultActivity : AppCompatActivity() {
                     R.string.inedible_message
                 )
             }
+
             else -> {
                 setSafetyCard(
                     android.R.color.holo_green_dark,
@@ -184,8 +194,10 @@ class ResultActivity : AppCompatActivity() {
         binding.cardSafety.setCardBackgroundColor(
             ContextCompat.getColor(this, colorRes)
         )
+
         binding.tvSafetyTitle.setText(titleRes)
         binding.tvSafetyMessage.setText(messageRes)
+
         val whiteColor = ContextCompat.getColor(this, android.R.color.white)
         binding.tvSafetyTitle.setTextColor(whiteColor)
         binding.tvSafetyMessage.setTextColor(whiteColor)
@@ -213,32 +225,155 @@ class ResultActivity : AppCompatActivity() {
     }
 
     /**
-     * Display storage predictions for edible mushrooms
-     * Shows a table with different storage methods, shelf life, and freshness indicators
+     * ✅ Display storage predictions with FRESHNESS ANALYSIS
+     * Analyzes the actual mushroom image to determine current condition
      */
     private fun displayStoragePredictions() {
         // Only show for edible mushrooms
         if (category != MushroomCategory.EDIBLE.name) {
             binding.cardStoragePredictions.visibility = View.GONE
+            binding.cardFreshness.visibility = View.GONE
             return
         }
 
         try {
             binding.cardStoragePredictions.visibility = View.VISIBLE
-            binding.layoutStorageRows.removeAllViews()
 
-            // Get all storage predictions
-            val predictions = ShelfLifePredictor.getAllStoragePredictions(className)
+            // ✅ Analyze actual mushroom freshness from image
+            lifecycleScope.launch {
+                val freshnessResult = withContext(Dispatchers.Default) {
+                    imageBitmap?.let { bitmap ->
+                        Log.d(TAG, "🔍 Starting freshness analysis...")
+                        freshnessAnalyzer.analyzeFreshness(bitmap, className)
+                    }
+                }
 
-            // Create table rows for each storage method
-            predictions.forEach { prediction ->
-                addStorageRow(prediction)
+                if (freshnessResult != null) {
+                    Log.d(TAG, "✅ Freshness analysis complete:")
+                    Log.d(TAG, "  Score: ${freshnessResult.freshnessScore}%")
+                    Log.d(TAG, "  Status: ${freshnessResult.status}")
+                    Log.d(TAG, "  Multiplier: ${freshnessResult.shelfLifeMultiplier}x")
+
+                    // ✅ Display freshness status card
+                    displayFreshnessCard(freshnessResult)
+
+                    // ✅ Get predictions with freshness multiplier
+                    val predictions = ShelfLifePredictor.getAllStoragePredictions(
+                        className,
+                        freshnessResult.shelfLifeMultiplier
+                    )
+
+                    // Clear and add storage rows
+                    binding.layoutStorageRows.removeAllViews()
+                    predictions.forEach { prediction ->
+                        addStorageRow(prediction)
+                    }
+                } else {
+                    Log.w(TAG, "⚠️ Could not analyze freshness, using default")
+                    // Fallback to default predictions
+                    binding.cardFreshness.visibility = View.GONE
+                    val predictions = ShelfLifePredictor.getAllStoragePredictions(className)
+                    binding.layoutStorageRows.removeAllViews()
+                    predictions.forEach { prediction ->
+                        addStorageRow(prediction)
+                    }
+                }
             }
+
         } catch (ex: Exception) {
             Log.e(TAG, "❌ Failed to display storage predictions", ex)
-            // Hide card if prediction fails
             binding.cardStoragePredictions.visibility = View.GONE
+            binding.cardFreshness.visibility = View.GONE
         }
+    }
+
+    /**
+     * ✅ UPDATED: Display freshness analysis in dedicated card (Dynamic with proper formatting)
+     */
+    private fun displayFreshnessCard(freshnessResult: com.example.mushroom_grader.ml.FreshnessAnalysisResult) {
+        // Show freshness card
+        binding.cardFreshness.visibility = View.VISIBLE
+
+        // Set freshness score
+        binding.tvFreshnessScore.text = getString(R.string.percentage_format, freshnessResult.freshnessScore)
+
+        // Set freshness status
+        binding.tvFreshnessStatus.text = freshnessResult.status
+
+        // Set progress bar
+        binding.progressFreshness.progress = freshnessResult.freshnessScore
+
+        // Color code based on freshness score
+        val (progressColor, textColor) = when {
+            freshnessResult.freshnessScore >= 85 -> {
+                Pair(android.R.color.holo_green_dark, android.R.color.holo_green_dark)
+            }
+            freshnessResult.freshnessScore >= 70 -> {
+                Pair(android.R.color.holo_green_light, android.R.color.holo_green_light)
+            }
+            freshnessResult.freshnessScore >= 50 -> {
+                Pair(android.R.color.holo_orange_light, android.R.color.holo_orange_dark)
+            }
+            freshnessResult.freshnessScore >= 30 -> {
+                Pair(android.R.color.holo_orange_dark, android.R.color.holo_red_dark)
+            }
+            else -> {
+                Pair(android.R.color.holo_red_dark, android.R.color.holo_red_dark)
+            }
+        }
+
+        binding.progressFreshness.progressTintList =
+            ContextCompat.getColorStateList(this, progressColor)
+        binding.tvFreshnessScore.setTextColor(
+            ContextCompat.getColor(this, textColor)
+        )
+        binding.tvFreshnessStatus.setTextColor(
+            ContextCompat.getColor(this, textColor)
+        )
+
+        // Show detailed analysis on button click
+        binding.btnFreshnessDetails.setOnClickListener {
+            showFreshnessDetailsDialog(freshnessResult)
+        }
+
+        // ✅ FIXED: Update storage title dynamically with proper string formatting
+        val dynamicTitle = buildString {
+            append(getString(R.string.shelf_life_by_storage))
+            append("\n")
+            append(getString(R.string.current_freshness_format, freshnessResult.freshnessScore, freshnessResult.status))
+        }
+        binding.tvStoragePredictionsTitle.text = dynamicTitle
+
+        Log.d(TAG, "✅ Freshness card displayed: ${freshnessResult.freshnessScore}%")
+    }
+
+    /**
+     * ✅ Show detailed freshness analysis dialog
+     */
+    private fun showFreshnessDetailsDialog(freshnessResult: com.example.mushroom_grader.ml.FreshnessAnalysisResult) {
+        val message = buildString {
+            append(freshnessResult.details)
+            append("\n\n")
+            append(getString(R.string.component_scores))
+            append("\n")
+            append(getString(R.string.color_vibrancy_format, freshnessResult.colorScore))
+            append("\n")
+            append(getString(R.string.browning_level_format, freshnessResult.browningScore))
+            append("\n")
+            append(getString(R.string.spotting_format, freshnessResult.spotScore))
+            append("\n")
+            append(getString(R.string.texture_quality_format, freshnessResult.textureScore))
+            append("\n")
+            append(getString(R.string.moisture_level_format, freshnessResult.moistureScore))
+            append("\n\n")
+            append(getString(R.string.freshness_affects_shelf_life))
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.freshness_analysis_details)
+            .setMessage(message)
+            .setPositiveButton(R.string.ok, null)
+            .show()
     }
 
     /**
@@ -270,7 +405,7 @@ class ResultActivity : AppCompatActivity() {
         val color = getShelfLifeColor(prediction.calculatedDays)
         daysView.setTextColor(ContextCompat.getColor(this, color))
 
-        // NEW: Set freshness status indicator bar
+        // Set freshness status indicator bar
         val freshnessIndicator = rowView.findViewById<View>(R.id.viewFreshnessIndicator)
         val freshnessStatus = prediction.getFreshnessStatus()
         freshnessIndicator.setBackgroundColor(
@@ -315,6 +450,7 @@ class ResultActivity : AppCompatActivity() {
      */
     private fun showDetailedStorageInfo(prediction: com.example.mushroom_grader.ml.ShelfLifeData) {
         val message = buildStorageInfoMessage(prediction)
+
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.storage_details)
             .setMessage(message)
@@ -330,11 +466,14 @@ class ResultActivity : AppCompatActivity() {
         val daysRemaining = prediction.getDaysRemaining()
 
         return buildString {
-            append("📦 ${prediction.storageMethod.displayName}\n\n")
+            append(getString(R.string.storage_method_header, prediction.storageMethod.displayName))
+            append("\n\n")
 
-            // NEW: Show freshness status
-            append("🔔 Freshness: ${freshnessStatus.message}\n")
-            append("📊 Days Remaining: $daysRemaining days\n\n")
+            // Freshness status
+            append(getString(R.string.freshness_label, freshnessStatus.message))
+            append("\n")
+            append(getString(R.string.days_remaining_label, daysRemaining))
+            append("\n\n")
 
             append(getString(R.string.shelf_life_format, prediction.calculatedDays))
             append("\n")
@@ -353,7 +492,7 @@ class ResultActivity : AppCompatActivity() {
             append(getString(R.string.warnings))
             append(":\n")
             prediction.warnings.forEach { warning ->
-                append("⚠️ $warning\n")
+                append("• $warning\n")
             }
         }
     }
@@ -388,11 +527,13 @@ class ResultActivity : AppCompatActivity() {
      */
     private fun shareResult() {
         val shareText = buildShareMessage()
+
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
             putExtra(Intent.EXTRA_TEXT, shareText)
             putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_subject, className))
         }
+
         startActivity(Intent.createChooser(shareIntent, getString(R.string.share_result)))
     }
 
@@ -415,6 +556,7 @@ class ResultActivity : AppCompatActivity() {
             } else {
                 getString(R.string.safe_to_eat)
             }
+
             append(getString(R.string.share_safety, safetyText))
             append("\n")
 
@@ -459,6 +601,7 @@ class ResultActivity : AppCompatActivity() {
      */
     private fun showMoreInfoDialog() {
         val message = mlModelHelper.getMushroomInfo(classId)
+
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.detailed_information)
             .setMessage(message)
@@ -468,13 +611,14 @@ class ResultActivity : AppCompatActivity() {
 
     /**
      * Save classification result to database
-     * ✅ NOW WITH FULL LOGGING AND ERROR HANDLING
      */
     private fun saveToDatabase() {
         Log.d(TAG, "💾 saveToDatabase() called")
+
         lifecycleScope.launch {
             try {
                 Log.d(TAG, "📦 Creating ClassificationResult object...")
+
                 withContext(Dispatchers.IO) {
                     val result = ClassificationResult(
                         className = className,
@@ -487,6 +631,7 @@ class ResultActivity : AppCompatActivity() {
                     )
 
                     Log.d(TAG, "📦 Result object created: $className")
+
                     val database = AppDatabase.getDatabase(applicationContext)
                     Log.d(TAG, "✅ Database instance obtained")
 
@@ -498,20 +643,20 @@ class ResultActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         this@ResultActivity,
-                        "✓ Saved to history",
+                        R.string.saved_to_history,
                         Toast.LENGTH_SHORT
                     ).show()
                 }
+
             } catch (ex: Exception) {
                 Log.e(TAG, "❌ FAILED to save to database!", ex)
                 Log.e(TAG, "❌ Error: ${ex.message}")
-                Log.e(TAG, "❌ Stack trace: ${ex.stackTraceToString()}")
 
                 // Show error toast
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         this@ResultActivity,
-                        "Failed to save: ${ex.message}",
+                        getString(R.string.error_database),
                         Toast.LENGTH_LONG
                     ).show()
                 }
@@ -528,11 +673,12 @@ class ResultActivity : AppCompatActivity() {
     }
 
     /**
-     * Clean up ML model resources
+     * Clean up ML model resources and bitmap
      */
     override fun onDestroy() {
         super.onDestroy()
         mlModelHelper.close()
-        Log.d(TAG, "🔚 Activity destroyed")
+        imageBitmap?.recycle()
+        Log.d(TAG, "🔚 Activity destroyed, resources cleaned up")
     }
 }

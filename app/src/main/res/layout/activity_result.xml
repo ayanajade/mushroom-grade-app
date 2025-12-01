@@ -1,39 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:fillViewport="true">
 
-    <!-- AppBar with Toolbar -->
-    <com.google.android.material.appbar.AppBarLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
+        <!-- Toolbar -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
+            android:elevation="4dp"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <!-- Main Scrollable Content -->
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
+        <!-- Main Content -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Mushroom Image Card -->
+            <!-- Mushroom Image -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -44,57 +39,32 @@
                 <ImageView
                     android:id="@+id/ivMushroom"
                     android:layout_width="match_parent"
-                    android:layout_height="250dp"
+                    android:layout_height="300dp"
+                    android:contentDescription="@string/mushroom_image"
                     android:scaleType="centerCrop"
-                    android:contentDescription="@string/app_name"
-                    tools:src="@android:drawable/ic_menu_gallery" />
-
+                    tools:src="@drawable/ic_launcher_foreground" />
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Classification Info Card -->
-            <com.google.android.material.card.MaterialCardView
+            <!-- Mushroom Name -->
+            <TextView
+                android:id="@+id/tvMushroomName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:textAlignment="center"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                tools:text="Oyster Mushroom - Class A" />
+
+            <!-- Confidence -->
+            <TextView
+                android:id="@+id/tvConfidence"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/tvMushroomName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="24sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        tools:text="Oyster - Class A" />
-
-                    <TextView
-                        android:id="@+id/tvConfidence"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:textSize="16sp"
-                        android:textColor="@color/text_secondary"
-                        tools:text="Confidence: 95.2%" />
-
-                    <TextView
-                        android:id="@+id/tvCategory"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_secondary"
-                        tools:text="Category: EDIBLE" />
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
+                android:textAlignment="center"
+                android:textSize="16sp"
+                tools:text="Confidence: 95.2%" />
 
             <!-- Safety Status Card -->
             <com.google.android.material.card.MaterialCardView
@@ -102,7 +72,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="8dp"
                 app:cardElevation="4dp">
 
                 <LinearLayout
@@ -113,73 +83,31 @@
 
                     <TextView
                         android:id="@+id/tvSafetyTitle"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textSize="20sp"
+                        android:textSize="18sp"
                         android:textStyle="bold"
-                        tools:text="✓ SAFE TO EAT" />
+                        tools:text="✅ Safe to Eat" />
 
                     <TextView
                         android:id="@+id/tvSafetyMessage"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:textSize="14sp"
-                        tools:text="This mushroom is safe to consume." />
-
+                        tools:text="This mushroom is edible and safe for consumption." />
                 </LinearLayout>
-
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Grade Card (Optional - shows only when grade exists) -->
+            <!-- Grade Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardGrade"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:visibility="gone"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="8dp"
                 app:cardElevation="4dp"
-                tools:visibility="visible">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/grade"
-                        android:textSize="16sp"
-                        android:textColor="@color/text_secondary" />
-
-                    <TextView
-                        android:id="@+id/tvGradeValue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/primary"
-                        tools:text="Class A" />
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Storage Predictions Card (Table Format - Only for Edible) -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardStoragePredictions"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:visibility="gone"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="@color/storage_card_background"
                 tools:visibility="visible">
 
                 <LinearLayout
@@ -188,88 +116,182 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <!-- Header -->
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/storage_predictions_title"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary" />
+                        android:text="@string/grade_label"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:id="@+id/tvGradeValue"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="@string/storage_predictions_subtitle"
-                        android:textSize="12sp"
-                        android:textColor="@color/text_secondary" />
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        tools:text="Class A" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-                    <!-- Divider -->
-                    <View
+            <!-- ✅ Freshness Analysis Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardFreshness"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp"
+                tools:visibility="visible">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="12dp"
-                        android:background="@color/divider" />
+                        android:layout_height="wrap_content"
+                        android:text="@string/freshness_analysis"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorPrimary" />
 
-                    <!-- Table Header -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
                         android:orientation="horizontal"
-                        android:background="@color/primary_light"
-                        android:padding="8dp">
+                        android:baselineAligned="false">
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="2"
-                            android:text="@string/storage_method"
-                            android:textStyle="bold"
-                            android:textSize="12sp"
-                            android:textColor="@color/text_primary" />
-
-                        <TextView
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/shelf_life"
-                            android:textStyle="bold"
-                            android:textSize="12sp"
-                            android:textColor="@color/text_primary"
-                            android:gravity="center" />
+                            android:orientation="vertical">
 
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/freshness_score_label"
+                                android:textSize="12sp"
+                                android:textColor="?android:attr/textColorSecondary" />
+
+                            <TextView
+                                android:id="@+id/tvFreshnessScore"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="24sp"
+                                android:textStyle="bold"
+                                tools:text="85%" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/status_label"
+                                android:textSize="12sp"
+                                android:textColor="?android:attr/textColorSecondary" />
+
+                            <TextView
+                                android:id="@+id/tvFreshnessStatus"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                tools:text="Good - Fresh" />
+                        </LinearLayout>
                     </LinearLayout>
 
-                    <!-- Dynamic Storage Rows Container -->
+                    <!-- Freshness Progress Bar -->
+                    <ProgressBar
+                        android:id="@+id/progressFreshness"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="8dp"
+                        android:layout_marginTop="12dp"
+                        android:max="100"
+                        tools:progress="85" />
+
+                    <!-- View Details Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFreshnessDetails"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/view_detailed_analysis"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Storage Predictions Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardStoragePredictions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp"
+                tools:visibility="visible">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tvStoragePredictionsTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/shelf_life_by_storage"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorPrimary" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/calculated_based_on_condition"
+                        android:textSize="12sp"
+                        android:textColor="?android:attr/textColorSecondary" />
+
+                    <!-- Storage method rows will be added here dynamically -->
                     <LinearLayout
                         android:id="@+id/layoutStorageRows"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical" />
-
-                    <!-- Hint Text -->
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:text="@string/tap_for_details"
-                        android:textSize="12sp"
-                        android:textColor="@color/text_secondary"
-                        android:textStyle="italic"
-                        android:gravity="center" />
-
+                        android:orientation="vertical" />
                 </LinearLayout>
-
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Detailed Information Card -->
+            <!-- Category -->
+            <TextView
+                android:id="@+id/tvCategory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:textSize="14sp"
+                tools:text="Category: EDIBLE" />
+
+            <!-- Detailed Info Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="8dp"
                 app:cardElevation="4dp">
 
                 <LinearLayout
@@ -279,96 +301,74 @@
                     android:padding="16dp">
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/detailed_information"
-                        android:textSize="18sp"
+                        android:text="@string/detailed_information_title"
+                        android:textSize="16sp"
                         android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="8dp" />
+                        android:textColor="?attr/colorPrimary" />
 
                     <TextView
                         android:id="@+id/tvDetailedInfo"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
                         android:textSize="14sp"
-                        android:textColor="@color/text_secondary"
-                        android:lineSpacingExtra="4dp"
-                        tools:text="Detailed mushroom information will appear here with scientific details, habitat, and characteristics." />
-
+                        tools:text="Detailed mushroom information..." />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Action Buttons Section -->
+            <!-- Action Buttons -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="8dp">
+                android:orientation="vertical">
 
-                <!-- Share Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnShare"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
                     android:text="@string/share_result"
-                    android:textSize="16sp"
-                    app:icon="@android:drawable/ic_menu_share"
-                    app:iconGravity="start"
-                    style="@style/Widget.Material3.Button" />
+                    app:icon="@android:drawable/ic_menu_share" />
 
-                <!-- More Info Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnMoreInfo"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:text="@string/more_info"
-                    android:textSize="16sp"
-                    app:icon="@android:drawable/ic_menu_info_details"
-                    app:iconGravity="start"
-                    style="@style/Widget.Material3.Button.TonalButton" />
+                    android:text="@string/more_information" />
 
-                <!-- Take Another Photo Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnTakeAnother"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="@string/take_another"
-                    android:textSize="16sp"
-                    app:icon="@android:drawable/ic_menu_camera"
-                    app:iconGravity="start"
-                    style="@style/Widget.Material3.Button.OutlinedButton" />
+                    android:orientation="horizontal">
 
-                <!-- View History Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnViewHistory"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="@string/view_history"
-                    android:textSize="16sp"
-                    app:icon="@android:drawable/ic_menu_recent_history"
-                    app:iconGravity="start"
-                    style="@style/Widget.Material3.Button.OutlinedButton" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTakeAnother"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/take_another" />
 
-                <!-- Back to Home Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnViewHistory"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/view_history" />
+                </LinearLayout>
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnBackHome"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/back_to_home"
-                    android:textSize="16sp"
-                    app:icon="@android:drawable/ic_menu_revert"
-                    app:iconGravity="start"
-                    style="@style/Widget.Material3.Button.TextButton" />
-
+                    android:text="@string/back_to_home" />
             </LinearLayout>
-
         </LinearLayout>
-
-    </androidx.core.widget.NestedScrollView>
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </LinearLayout>
+</ScrollView>
