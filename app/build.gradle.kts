@@ -27,7 +27,7 @@ android {
         }
     }
 
-    // ✅ ADDED: Custom APK Naming
+    // ✅ Custom APK Naming
     applicationVariants.all {
         outputs.all {
             val outputImpl = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
@@ -53,59 +53,59 @@ android {
 }
 
 dependencies {
-    // Core Android
+    // ==================== Core Android ====================
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 
-    // Navigation Component
+    // ==================== Navigation Component ====================
     val navVersion = "2.7.7"
     implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
     implementation("androidx.navigation:navigation-ui-ktx:$navVersion")
 
-    // ExifInterface for image orientation
+    // ==================== Image Processing ====================
+    // ✅ REQUIRED: ExifInterface for proper image rotation handling
     implementation("androidx.exifinterface:exifinterface:1.3.7")
 
-    // Fragment KTX
+    // ==================== Fragment & Lifecycle ====================
     implementation("androidx.fragment:fragment-ktx:1.6.2")
-
-    // Lifecycle components
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.7")
 
-    // Coroutines
+    // ==================== Coroutines ====================
+    // ✅ REQUIRED: For async image processing and classification
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
-    // Room Database
+    // ==================== Room Database ====================
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
 
-    // CameraX
+    // ==================== CameraX ====================
+    // ✅ REQUIRED: For camera capture with quality optimization
     val cameraxVersion = "1.3.4"
     implementation("androidx.camera:camera-camera2:$cameraxVersion")
     implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
     implementation("androidx.camera:camera-view:$cameraxVersion")
 
-    // TensorFlow Lite (CPU only)
+    // ==================== TensorFlow Lite ====================
+    // ✅ REQUIRED: For mushroom classification model
     implementation("org.tensorflow:tensorflow-lite:2.14.0")
     implementation("org.tensorflow:tensorflow-lite-support:0.4.4")
     implementation("org.tensorflow:tensorflow-lite-metadata:0.4.4")
 
-    // RecyclerView
+    // ==================== UI Components ====================
     implementation("androidx.recyclerview:recyclerview:1.3.2")
-
-    // CardView
     implementation("androidx.cardview:cardview:1.0.0")
 
-    // PDF Export Library
+    // ==================== PDF Export ====================
     implementation("com.itextpdf:itext7-core:7.2.5")
 
-    // Testing
+    // ==================== Testing ====================
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")

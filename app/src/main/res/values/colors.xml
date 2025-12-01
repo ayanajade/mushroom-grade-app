@@ -1,34 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Primary Colors -->
+    <color name="primary">#4CAF50</color>
+    <color name="primary_dark">#388E3C</color>
+    <color name="primary_light">#C8E6C9</color>
+    <color name="accent">#FF9800</color>
+
+    <!-- NEW: Mushroom Specific Colors -->
     <color name="primary_green">#4CAF50</color>
     <color name="primary_green_dark">#388E3C</color>
     <color name="primary_brown">#8D6E63</color>
     <color name="primary_brown_dark">#5D4037</color>
+
+    <!-- Background Colors -->
+    <color name="background">#F5F5F5</color>
     <color name="background_white">#FFFFFF</color>
-    <color name="surface_light">#F5F5F5</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_light">#FAFAFA</color>
+
+    <!-- Text Colors -->
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
+    <color name="text_hint">#BDBDBD</color>
+
+    <!-- Status Colors -->
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FF9800</color>
+    <color name="error">#F44336</color>
+    <color name="info">#2196F3</color>
+
+    <!-- Green Shades (for freshness status) -->
+    <color name="green_50">#E8F5E9</color>
+    <color name="green_100">#C8E6C9</color>
+    <color name="green_200">#A5D6A7</color>
+    <color name="green_300">#81C784</color>
+    <color name="green_400">#66BB6A</color>
+    <color name="green_500">#4CAF50</color>
+    <color name="green_600">#43A047</color>
+    <color name="green_700">#388E3C</color>
+    <color name="green_800">#2E7D32</color>
+    <color name="green_900">#1B5E20</color>
+
+    <!-- Orange Shades (for warning status) -->
+    <color name="orange_50">#FFF3E0</color>
+    <color name="orange_100">#FFE0B2</color>
+    <color name="orange_200">#FFCC80</color>
+    <color name="orange_300">#FFB74D</color>
+    <color name="orange_400">#FFA726</color>
+    <color name="orange_500">#FF9800</color>
+    <color name="orange_600">#FB8C00</color>
+    <color name="orange_700">#F57C00</color>
+    <color name="orange_800">#EF6C00</color>
+    <color name="orange_900">#E65100</color>
+
+    <!-- Red Shades (for critical status) -->
+    <color name="red_50">#FFEBEE</color>
+    <color name="red_100">#FFCDD2</color>
+    <color name="red_200">#EF9A9A</color>
+    <color name="red_300">#E57373</color>
+    <color name="red_400">#EF5350</color>
+    <color name="red_500">#F44336</color>
+    <color name="red_600">#E53935</color>
+    <color name="red_700">#D32F2F</color>
+    <color name="red_800">#C62828</color>
+    <color name="red_900">#B71C1C</color>
+
+    <!-- Gray Shades (for expired status) -->
+    <color name="gray_50">#FAFAFA</color>
+    <color name="gray_100">#F5F5F5</color>
+    <color name="gray_200">#EEEEEE</color>
+    <color name="gray_300">#E0E0E0</color>
+    <color name="gray_400">#BDBDBD</color>
+    <color name="gray_500">#9E9E9E</color>
+    <color name="gray_600">#757575</color>
+    <color name="gray_700">#616161</color>
+    <color name="gray_800">#424242</color>
+    <color name="gray_900">#212121</color>
+    <color name="white">#FFFFFF</color>
+
+    <!-- Add to your existing colors.xml -->
+    <color name="border_grey">#E0E0E0</color>
     <color name="danger_red">#F44336</color>
-    <color name="danger_red_dark">#D32F2F</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="danger_card_background">#FFEBEE</color>
+    <color name="background_color">#F5F5F5</color>
 
-    <!-- Light greys -->
-    <color name="light_grey">#FFF5F5F5</color>
-    <color name="very_light_grey">#FFEEEEEE</color>
-    <color name="soft_grey">#FFE0E0E0</color>
 
-    <!-- Medium greys -->
-    <color name="medium_grey">#FFBDBDBD</color>
-    <color name="grey">#FF9E9E9E</color>
-    <color name="dark_grey">#FF757575</color>
+    <!-- Storage Card Colors -->
+    <color name="storage_card_background">#E8F5E9</color>
+    <color name="warning_background">#FFF3E0</color>
+    <color name="warning_text">#E65100</color>
 
-    <!-- Darker greys -->
-    <color name="charcoal_grey">#FF424242</color>
-    <color name="very_dark_grey">#FF212121</color>
+    <!-- Divider -->
+    <color name="divider">#E0E0E0</color>
 
-    <!-- Popular UI greys -->
-    <color name="material_grey">#FF616161</color>
-    <color name="hint_grey">#FF999999</color>
-    <color name="border_grey">#FFCCCCCC</color>
+    <!-- Transparent -->
+    <color name="transparent">#00000000</color>
+
 </resources>

@@ -3,6 +3,8 @@ package com.example.mushroom_grader.ml
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.core.graphics.get
+import androidx.core.graphics.scale
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.support.common.FileUtil
 import java.nio.ByteBuffer
@@ -14,12 +16,12 @@ class MLModelHelper(private val context: Context) {
         private const val TAG = "MLModelHelper"
         private const val MODEL_PATH = "mushroom_classifier.tflite"
         private const val INPUT_SIZE = 256
-        private const val NUM_CLASSES = 13  // ✅ CHANGED FROM 12 TO 13
+        private const val NUM_CLASSES = 13
 
         private val THRESHOLDS = listOf(
-            0.90f, // High confidence - Show immediately
+            0.90f, // High confidence
             0.85f, // Caution
-            0.60f  // Ask to retake
+            0.60f  // Minimum threshold
         )
     }
 
@@ -35,6 +37,13 @@ class MLModelHelper(private val context: Context) {
             val model = FileUtil.loadMappedFile(context, MODEL_PATH)
             interpreter = Interpreter(model)
             isInitialized = true
+
+            MushroomDetectionConfig.initialize(NUM_CLASSES) { classId ->
+                getClassNameByIndex(classId)
+            }
+
+            Log.d(TAG, "Model initialized: $NUM_CLASSES classes")
+            Log.d(TAG, "Detection Mode: ${MushroomDetectionConfig.getDetectionModeDescription()}")
         } catch (e: Exception) {
             Log.e(TAG, "Error loading model", e)
             isInitialized = false
@@ -42,19 +51,348 @@ class MLModelHelper(private val context: Context) {
     }
 
     fun classifyImage(bitmap: Bitmap): ClassificationResult? {
-        if (!isInitialized || interpreter == null) return null
-        return try {
-            val inputBuffer = preprocessImage(bitmap)
-            val output = Array(1) { FloatArray(NUM_CLASSES) }
-            interpreter?.run(inputBuffer, output)
-            processOutput(output[0])
-        } catch (e: Exception) {
-            null
+        if (!isInitialized || interpreter == null) {
+            Log.e(TAG, "Model not initialized")
+            return null
+        }
+
+        return if (MushroomDetectionConfig.hasNonMushroomClass) {
+            classifyWithNonMushroomClass(bitmap)
+        } else {
+            classifyWithHeuristicValidation(bitmap)
         }
     }
 
+    private fun classifyWithNonMushroomClass(bitmap: Bitmap): ClassificationResult? {
+        try {
+            val topPredictions = getTopPredictions(bitmap, 5)
+            if (topPredictions.isEmpty()) {
+                Log.d(TAG, "No predictions returned")
+                return null
+            }
+
+            val notMushroomPrediction = topPredictions.find {
+                MushroomDetectionConfig.isNotMushroomClass(it.classId)
+            }
+
+            if (notMushroomPrediction != null &&
+                notMushroomPrediction.confidence > MushroomDetectionConfig.notMushroomRejectionThreshold) {
+                Log.d(TAG, "🚫 MODEL REJECTED: NOT_MUSHROOM confidence ${notMushroomPrediction.confidence}")
+                return null
+            }
+
+            val topMushroomPrediction = topPredictions.firstOrNull {
+                !MushroomDetectionConfig.isNotMushroomClass(it.classId)
+            }
+
+            if (topMushroomPrediction == null) {
+                Log.d(TAG, "No valid mushroom predictions")
+                return null
+            }
+
+            if (topMushroomPrediction.confidence < MushroomDetectionConfig.confidenceThreshold) {
+                Log.d(TAG, "REJECTED: Confidence too low (${topMushroomPrediction.confidence})")
+                return null
+            }
+
+            val secondMushroomPrediction = topPredictions
+                .filter { !MushroomDetectionConfig.isNotMushroomClass(it.classId) }
+                .drop(1)
+                .firstOrNull()
+
+            if (secondMushroomPrediction != null) {
+                val gap = topMushroomPrediction.confidence - secondMushroomPrediction.confidence
+                if (gap < MushroomDetectionConfig.confidenceGapThreshold) {
+                    Log.d(TAG, "REJECTED: Small confidence gap ($gap)")
+                    return null
+                }
+            }
+
+            Log.d(TAG, "✅ ACCEPTED (Model-Based): ${topMushroomPrediction.className} (${topMushroomPrediction.confidence})")
+            return topMushroomPrediction
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Classification failed", e)
+            return null
+        }
+    }
+
+    private fun classifyWithHeuristicValidation(bitmap: Bitmap): ClassificationResult? {
+        try {
+            if (!validateEnhancedImage(bitmap)) {
+                Log.d(TAG, "REJECTED: Image quality check failed")
+                return null
+            }
+
+            val topPredictions = getTopPredictions(bitmap, 3)
+            if (topPredictions.isEmpty()) {
+                Log.d(TAG, "No predictions returned")
+                return null
+            }
+
+            val topPrediction = topPredictions[0]
+
+            if (topPrediction.confidence < MushroomDetectionConfig.confidenceThreshold) {
+                Log.d(TAG, "REJECTED: Confidence too low (${topPrediction.confidence})")
+                return null
+            }
+
+            val entropyScore = calculatePredictionEntropy(topPredictions)
+            if (entropyScore > MushroomDetectionConfig.maxEntropyThreshold) {
+                Log.d(TAG, "REJECTED: High entropy (uncertain predictions)")
+                return null
+            }
+
+            if (topPredictions.size >= 2) {
+                val confidenceGap = topPrediction.confidence - topPredictions[1].confidence
+                if (confidenceGap < MushroomDetectionConfig.confidenceGapThreshold) {
+                    Log.d(TAG, "REJECTED: Small confidence gap ($confidenceGap)")
+                    return null
+                }
+            }
+
+            if (topPredictions.size >= 2 && !validateCategoryConsistency(topPredictions)) {
+                Log.d(TAG, "REJECTED: Category inconsistency")
+                return null
+            }
+
+            if (!validateVisualFeatures(bitmap)) {
+                Log.d(TAG, "REJECTED: Failed visual feature check")
+                return null
+            }
+
+            val calibratedConfidence = calibrateConfidence(topPrediction.confidence, entropyScore)
+            if (calibratedConfidence < MushroomDetectionConfig.calibratedConfidenceThreshold) {
+                Log.d(TAG, "REJECTED: Calibrated confidence too low ($calibratedConfidence)")
+                return null
+            }
+
+            Log.d(TAG, "✅ ACCEPTED (Heuristic): ${topPrediction.className} (raw: ${topPrediction.confidence}, calibrated: $calibratedConfidence)")
+            return topPrediction.copy(confidence = calibratedConfidence)
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Classification validation failed", e)
+            return null
+        }
+    }
+
+    private fun getTopPredictions(bitmap: Bitmap, topK: Int): List<ClassificationResult> {
+        val inputBuffer = preprocessImage(bitmap)
+        val output = Array(1) { FloatArray(NUM_CLASSES) }
+
+        interpreter?.run(inputBuffer, output)
+
+        val predictions = output[0]
+        val sortedIndices = predictions.indices.sortedByDescending { predictions[it] }
+
+        return sortedIndices.take(topK).mapNotNull { index ->
+            val confidence = predictions[index]
+            createClassificationResult(index, confidence)
+        }
+    }
+
+    private fun calculatePredictionEntropy(predictions: List<ClassificationResult>): Float {
+        val total = predictions.sumOf { it.confidence.toDouble() }.toFloat()
+        if (total == 0f) return 1f
+
+        var entropy = 0f
+        predictions.forEach { pred ->
+            val p = pred.confidence / total
+            if (p > 0) {
+                entropy -= p * kotlin.math.ln(p)
+            }
+        }
+
+        val maxEntropy = kotlin.math.ln(predictions.size.toFloat())
+        return if (maxEntropy > 0) entropy / maxEntropy else 0f
+    }
+
+    private fun validateCategoryConsistency(predictions: List<ClassificationResult>): Boolean {
+        if (predictions.isEmpty()) return false
+        val topCategory = predictions[0].category
+        val agreementCount = predictions.count { it.category == topCategory }
+        return agreementCount >= 2
+    }
+
+    private fun validateVisualFeatures(bitmap: Bitmap): Boolean {
+        val width = bitmap.width.coerceAtMost(100)
+        val height = bitmap.height.coerceAtMost(100)
+
+        // ✅ FIXED: Using KTX extension Bitmap.scale()
+        val scaled = bitmap.scale(width, height, filter = true)
+
+        var mushroomColorScore = 0f
+        var organicTextureScore = 0f
+        var pixelCount = 0
+
+        for (x in 0 until width) {
+            for (y in 0 until height) {
+                // ✅ FIXED: Using KTX extension Bitmap.get() instead of getPixel()
+                val pixel = scaled[x, y]
+                val r = (pixel shr 16) and 0xFF
+                val g = (pixel shr 8) and 0xFF
+                val b = pixel and 0xFF
+
+                val isWhitish = (r > 140 && g > 140 && b > 140)
+                val isBrownish = (r in 80..220 && g in 60..180 && b in 30..150)
+                val isTannish = (r in 140..230 && g in 120..210 && b in 70..160)
+                val isGrayish = (r in 100..200 && g in 100..200 && b in 100..200)
+                val isOrangeBrown = (r in 150..230 && g in 80..180 && b in 30..100)
+                val isRedBrown = (r in 120..230 && g in 40..150 && b in 30..100)
+                val isYellowish = (r in 180..240 && g in 180..240 && b in 100..180)
+
+                if (isWhitish || isBrownish || isTannish || isGrayish ||
+                    isOrangeBrown || isRedBrown || isYellowish) {
+                    mushroomColorScore += 1f
+                }
+
+                val neighbors = getNeighborPixels(scaled, x, y)
+                val variance = calculateLocalVariance(pixel, neighbors)
+                if (variance in 10f..80f) {
+                    organicTextureScore += 1f
+                }
+
+                pixelCount++
+            }
+        }
+
+        scaled.recycle()
+        val colorRatio = mushroomColorScore / pixelCount
+        val textureRatio = organicTextureScore / pixelCount
+        Log.d(TAG, "Visual validation - Color: $colorRatio, Texture: $textureRatio")
+
+        return colorRatio > MushroomDetectionConfig.minMushroomColorRatio &&
+                textureRatio > MushroomDetectionConfig.minMushroomTextureRatio
+    }
+
+    private fun validateEnhancedImage(bitmap: Bitmap): Boolean {
+        return expandedMushroomColorCheck(bitmap) && checkImageQuality(bitmap)
+    }
+
+    private fun expandedMushroomColorCheck(bitmap: Bitmap): Boolean {
+        val width = bitmap.width.coerceAtMost(100)
+        val height = bitmap.height.coerceAtMost(100)
+
+        // ✅ FIXED: Using KTX extension Bitmap.scale()
+        val scaled = bitmap.scale(width, height, filter = true)
+
+        var colorScore = 0f
+        var pixelCount = 0
+
+        for (x in 0 until width) {
+            for (y in 0 until height) {
+                // ✅ FIXED: Using KTX extension Bitmap.get()
+                val pixel = scaled[x, y]
+                val r = (pixel shr 16) and 0xFF
+                val g = (pixel shr 8) and 0xFF
+                val b = pixel and 0xFF
+
+                val isWhitish = (r > 140 && g > 140 && b > 140)
+                val isBrownish = (r in 80..220 && g in 60..180 && b in 30..150)
+                val isTannish = (r in 140..230 && g in 120..210 && b in 70..160)
+                val isGrayish = (r in 100..200 && g in 100..200 && b in 100..200)
+                val isOrangeBrown = (r in 150..230 && g in 80..180 && b in 30..100)
+                val isRedBrown = (r in 120..230 && g in 40..150 && b in 30..100)
+                val isYellowish = (r in 180..240 && g in 180..240 && b in 100..180)
+                val isCreamish = (r in 200..255 && g in 190..245 && b in 150..210)
+
+                if (isWhitish || isBrownish || isTannish || isGrayish ||
+                    isOrangeBrown || isRedBrown || isYellowish || isCreamish) {
+                    colorScore += 1f
+                }
+
+                pixelCount++
+            }
+        }
+
+        scaled.recycle()
+        val colorRatio = if (pixelCount > 0) colorScore / pixelCount else 0f
+        Log.d(TAG, "Color ratio: $colorRatio (threshold: ${MushroomDetectionConfig.minMushroomColorRatio})")
+        return colorRatio > MushroomDetectionConfig.minMushroomColorRatio
+    }
+
+    private fun checkImageQuality(bitmap: Bitmap): Boolean {
+        val width = bitmap.width.coerceAtMost(50)
+        val height = bitmap.height.coerceAtMost(50)
+
+        // ✅ FIXED: Using KTX extension Bitmap.scale()
+        val scaled = bitmap.scale(width, height, filter = true)
+
+        var laplacianScore = 0.0
+
+        for (x in 1 until (width - 1)) {
+            for (y in 1 until (height - 1)) {
+                // ✅ FIXED: Using KTX extension Bitmap.get()
+                val center = scaled[x, y]
+                val neighbors = intArrayOf(
+                    scaled[x - 1, y],
+                    scaled[x + 1, y],
+                    scaled[x, y - 1],
+                    scaled[x, y + 1],
+                    scaled[x - 1, y - 1],
+                    scaled[x + 1, y - 1],
+                    scaled[x - 1, y + 1],
+                    scaled[x + 1, y + 1]
+                )
+
+                val centerGray = ((center shr 16) and 0xFF) + ((center shr 8) and 0xFF) + (center and 0xFF)
+                val neighborAvg = neighbors.sumOf {
+                    (((it shr 16) and 0xFF) + ((it shr 8) and 0xFF) + (it and 0xFF)) / 3
+                } / 8
+
+                laplacianScore += kotlin.math.abs(centerGray - neighborAvg)
+            }
+        }
+
+        scaled.recycle()
+        val sharpness = laplacianScore / (width * height)
+        Log.d(TAG, "Image sharpness: $sharpness")
+
+        return sharpness > 50.0
+    }
+
+    private fun getNeighborPixels(bitmap: Bitmap, x: Int, y: Int): List<Int> {
+        val neighbors = mutableListOf<Int>()
+        for (dx in -1..1) {
+            for (dy in -1..1) {
+                if (dx == 0 && dy == 0) continue
+                val nx = (x + dx).coerceIn(0, bitmap.width - 1)
+                val ny = (y + dy).coerceIn(0, bitmap.height - 1)
+                // ✅ FIXED: Using KTX extension Bitmap.get()
+                neighbors.add(bitmap[nx, ny])
+            }
+        }
+        return neighbors
+    }
+
+    private fun calculateLocalVariance(centerPixel: Int, neighbors: List<Int>): Float {
+        val centerR = (centerPixel shr 16) and 0xFF
+        val centerG = (centerPixel shr 8) and 0xFF
+        val centerB = centerPixel and 0xFF
+
+        var variance = 0f
+        neighbors.forEach { pixel ->
+            val r = (pixel shr 16) and 0xFF
+            val g = (pixel shr 8) and 0xFF
+            val b = pixel and 0xFF
+
+            val diff = kotlin.math.abs(r - centerR) +
+                    kotlin.math.abs(g - centerG) +
+                    kotlin.math.abs(b - centerB)
+            variance += diff
+        }
+
+        return if (neighbors.isNotEmpty()) variance / neighbors.size else 0f
+    }
+
+    private fun calibrateConfidence(rawConfidence: Float, entropy: Float): Float {
+        val penaltyFactor = 1.0f - (entropy * 0.15f)
+        return rawConfidence * penaltyFactor
+    }
+
     private fun preprocessImage(bitmap: Bitmap): ByteBuffer {
-        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, true)
+        // ✅ FIXED: Using KTX extension Bitmap.scale()
+        val resizedBitmap = bitmap.scale(INPUT_SIZE, INPUT_SIZE, filter = true)
         val inputBuffer = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * 3)
         inputBuffer.order(ByteOrder.nativeOrder())
 
@@ -65,48 +403,34 @@ class MLModelHelper(private val context: Context) {
             val r = (pixel shr 16 and 0xFF) / 255.0f
             val g = (pixel shr 8 and 0xFF) / 255.0f
             val b = (pixel and 0xFF) / 255.0f
+
             inputBuffer.putFloat(r)
             inputBuffer.putFloat(g)
             inputBuffer.putFloat(b)
         }
 
+        if (resizedBitmap != bitmap) {
+            resizedBitmap.recycle()
+        }
+
         return inputBuffer
     }
 
-    private fun processOutput(output: FloatArray): ClassificationResult? {
-        var maxIndex = -1
-        var maxProb = 0f
-
-        for (i in output.indices) {
-            if (output[i] > maxProb) {
-                maxProb = output[i]
-                maxIndex = i
-            }
-        }
-
-        if (maxProb < THRESHOLDS[2]) {
-            return null // TOO LOW
-        }
-
-        return createClassificationResult(maxIndex, maxProb)
-    }
-
-    private fun createClassificationResult(classId: Int, confidence: Float): ClassificationResult {
-        // ✅ UPDATED: Added Oyster_Cluster at index 10
+    private fun createClassificationResult(classId: Int, confidence: Float): ClassificationResult? {
         val classes = arrayOf(
-            Triple("Amanita Pantherina", true, MushroomCategory.POISONOUS),
-            Triple("Amanita phalloides", true, MushroomCategory.POISONOUS),
-            Triple("Amanita virosa", true, MushroomCategory.POISONOUS),
-            Triple("Button Mushroom", false, MushroomCategory.EDIBLE),
-            Triple("Cinnabar Polypores", true, MushroomCategory.POISONOUS),
-            Triple("Daedaleopsis confragosa", true, MushroomCategory.POISONOUS),
-            Triple("Ganoderma applanatum", true, MushroomCategory.POISONOUS),
-            Triple("Oyster - Class A", false, MushroomCategory.EDIBLE),
-            Triple("Oyster - Class B", false, MushroomCategory.EDIBLE),
-            Triple("Oyster - Class C", false, MushroomCategory.EDIBLE),
-            Triple("Oyster - Cluster", false, MushroomCategory.EDIBLE),     // ✅ NEW CLASS
-            Triple("Oyster - Defective", false, MushroomCategory.INEDIBLE), // ✅ MOVED TO INDEX 11
-            Triple("Shiitake Mushroom", false, MushroomCategory.EDIBLE)     // ✅ MOVED TO INDEX 12
+            Triple("Amanita Pantherina", true, MushroomCategory.POISONOUS), // 0
+            Triple("Amanita phalloides", true, MushroomCategory.POISONOUS), // 1
+            Triple("Amanita virosa", true, MushroomCategory.POISONOUS), // 2
+            Triple("Button Mushroom", false, MushroomCategory.EDIBLE), // 3
+            Triple("Cinnabar Polypores", true, MushroomCategory.POISONOUS), // 4
+            Triple("Daedaleopsis confragosa", true, MushroomCategory.POISONOUS), // 5
+            Triple("Ganoderma applanatum", true, MushroomCategory.POISONOUS), // 6
+            Triple("Oyster - Class A", false, MushroomCategory.EDIBLE), // 7
+            Triple("Oyster - Class B", false, MushroomCategory.EDIBLE), // 8
+            Triple("Oyster - Class C", false, MushroomCategory.EDIBLE), // 9
+            Triple("Oyster - Cluster", false, MushroomCategory.EDIBLE), // 10
+            Triple("Oyster - Defective", false, MushroomCategory.INEDIBLE), // 11
+            Triple("Shiitake Mushroom", false, MushroomCategory.EDIBLE) // 12
         )
 
         val (name, isPoisonous, category) = if (classId in classes.indices) {
@@ -119,7 +443,7 @@ class MLModelHelper(private val context: Context) {
             name.contains("Class A") -> "Class A"
             name.contains("Class B") -> "Class B"
             name.contains("Class C") -> "Class C"
-            name.contains("Cluster") -> "Cluster"           // ✅ NEW GRADE
+            name.contains("Cluster") -> "Cluster"
             name.contains("Defective") -> "Defective"
             name == "Button Mushroom" -> "Mixed Grade"
             else -> null
@@ -135,6 +459,26 @@ class MLModelHelper(private val context: Context) {
         )
     }
 
+    private fun getClassNameByIndex(classId: Int): String {
+        val classes = arrayOf(
+            "Amanita Pantherina",
+            "Amanita phalloides",
+            "Amanita virosa",
+            "Button Mushroom",
+            "Cinnabar Polypores",
+            "Daedaleopsis confragosa",
+            "Ganoderma applanatum",
+            "Oyster - Class A",
+            "Oyster - Class B",
+            "Oyster - Class C",
+            "Oyster - Cluster",
+            "Oyster - Defective",
+            "Shiitake Mushroom"
+        )
+
+        return if (classId in classes.indices) classes[classId] else "Unknown"
+    }
+
     fun getMushroomInfo(classId: Int): String {
         return when (classId) {
             0 -> """
@@ -146,6 +490,7 @@ class MLModelHelper(private val context: Context) {
                 - Symptoms: Confusion, hallucinations, vomiting
                 - First Aid: Induce vomiting, seek emergency care immediately
             """.trimIndent()
+
             1 -> """
                 🍄 AMANITA PHALLOIDES (Death Cap)
                 ⚠️ EXTREMELY DEADLY - DO NOT CONSUME
@@ -155,6 +500,7 @@ class MLModelHelper(private val context: Context) {
                 - Symptoms: Severe vomiting, abdominal pain, liver failure
                 - First Aid: Hospitalization, activated charcoal, liver support
             """.trimIndent()
+
             2 -> """
                 🍄 AMANITA VIROSA (Destroying Angel)
                 ⚠️ EXTREMELY DEADLY - DO NOT CONSUME
@@ -164,6 +510,7 @@ class MLModelHelper(private val context: Context) {
                 - Symptoms: Delayed onset, vomiting, kidney/liver failure
                 - First Aid: Immediate medical attention, treat as medical emergency
             """.trimIndent()
+
             3 -> """
                 🍄 BUTTON MUSHROOM (Agaricus bisporus)
                 ✅ EDIBLE - SAFE TO EAT
@@ -173,6 +520,7 @@ class MLModelHelper(private val context: Context) {
                 - Nutritional Value: High in B vitamins, selenium, low-calorie protein source
                 - Safety: Safe when fresh and properly cooked
             """.trimIndent()
+
             4 -> """
                 🍄 CINNABAR POLYPORES (Pycnoporus cinnabarinus)
                 ⚠️ INEDIBLE — NOT TOXIC BUT TOO TOUGH
@@ -181,6 +529,7 @@ class MLModelHelper(private val context: Context) {
                 - Culinary Use: Not edible, used for dyes/pigments
                 - Ethnomedicine: Limited use in traditional medicine
             """.trimIndent()
+
             5 -> """
                 🍄 DAEDALEOPSIS CONFRAGOSA (Blushing Bracket)
                 ⚠️ INEDIBLE
@@ -188,6 +537,7 @@ class MLModelHelper(private val context: Context) {
                 - Habitat: Fallen willow, birch, hardwood logs throughout Eurasia
                 - Culinary: Not eaten; used for decoration/woodcraft
             """.trimIndent()
+
             6 -> """
                 🍄 GANODERMA APPLANATUM (Artist's Conk)
                 ⚠️ NOT FOR CULINARY USE - MEDICINAL REMEDY ONLY
@@ -196,6 +546,7 @@ class MLModelHelper(private val context: Context) {
                 - Use: Traditional medicine (immune boosting, anti-inflammatory)
                 - Culinary: Not edible; boiled for extracts/teas (very bitter)
             """.trimIndent()
+
             7 -> """
                 🍄 OYSTER MUSHROOM - CLASS A (Premium)
                 ✅ EDIBLE — PREMIUM QUALITY
@@ -204,6 +555,7 @@ class MLModelHelper(private val context: Context) {
                 - Habitat: Cultivated on logs or commercial substrate
                 - Nutrition: Rich in protein, B vitamins, antioxidants
             """.trimIndent()
+
             8 -> """
                 🍄 OYSTER MUSHROOM - CLASS B (Good)
                 ✅ EDIBLE — GOOD QUALITY
@@ -211,6 +563,7 @@ class MLModelHelper(private val context: Context) {
                 - Use: Suitable for cooked dishes, stir-fries, soups, stews
                 - Habitat: Commercial oyster farms, community mushroom houses
             """.trimIndent()
+
             9 -> """
                 🍄 OYSTER MUSHROOM - CLASS C (Fair)
                 ✅ EDIBLE — FAIR/COOK ONLY
@@ -218,6 +571,7 @@ class MLModelHelper(private val context: Context) {
                 - Use: Must be cooked, best in stews, sauces
                 - Habitat: Older flushes, variable cultivation
             """.trimIndent()
+
             10 -> """
                 🍄 OYSTER MUSHROOM - CLUSTER
                 ✅ EDIBLE — MULTIPLE MUSHROOMS GROUPED
@@ -226,6 +580,7 @@ class MLModelHelper(private val context: Context) {
                 - Habitat: Natural cluster formation in cultivation
                 - Note: May contain mixed quality mushrooms in one cluster
             """.trimIndent()
+
             11 -> """
                 🍄 OYSTER MUSHROOM - DEFECTIVE
                 ⚠️ NOT FOR CONSUMPTION
@@ -233,6 +588,7 @@ class MLModelHelper(private val context: Context) {
                 - Culinary: Rejected for human food, possible animal feed use
                 - Safety: Do not use for eating!
             """.trimIndent()
+
             12 -> """
                 🍄 SHIITAKE MUSHROOM (Lentinula edodes)
                 ✅ EDIBLE — MUST BE COOKED
@@ -242,6 +598,7 @@ class MLModelHelper(private val context: Context) {
                 - Nutrition: Immunity boost, dietary fiber, vitamin D
                 - Note: Some people sensitive to raw shiitake; always cook well
             """.trimIndent()
+
             else -> """
                 ❌ UNKNOWN MUSHROOM
                 - This mushroom could not be identified
@@ -264,6 +621,8 @@ class MLModelHelper(private val context: Context) {
             interpreter?.close()
             interpreter = null
             isInitialized = false
-        } catch (_: Exception) { }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error closing interpreter", e)
+        }
     }
 }

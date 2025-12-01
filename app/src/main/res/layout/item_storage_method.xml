@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardStorageMethod"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp">
+
+        <!-- Left side: Method Name and Description -->
+        <TextView
+            android:id="@+id/textMethodName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/textMethodDays"
+            android:layout_marginEnd="8dp"
+            tools:text="Vacuum Sealed" />
+
+        <TextView
+            android:id="@+id/textMethodDescription"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textMethodName"
+            app:layout_constraintEnd_toEndOf="@id/textMethodName"
+            tools:text="Removes air, prevents oxidation" />
+
+        <!-- Right side: Days count -->
+        <TextView
+            android:id="@+id/textMethodDays"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/primary"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="12" />
+
+        <TextView
+            android:id="@+id/textViewDaysLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="days"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="@id/textMethodDays"
+            app:layout_constraintTop_toBottomOf="@id/textMethodDays" />
+
+        <!-- Vertical centering constraints for both text groups -->
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/groupLeft"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="textMethodName,textMethodDescription"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/groupRight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="textMethodDays,textViewDaysLabel"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- Freshness Status Indicator (Vertical Color Bar) -->
+    <View
+        android:id="@+id/viewFreshnessIndicator"
+        android:layout_width="4dp"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="12dp"
+        android:background="@color/green_600"
+        tools:background="@color/green_600" />
+
+    <!-- Storage Method Name with Icon -->
+    <TextView
+        android:id="@+id/textStorageMethodName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:layout_gravity="center_vertical"
+        android:textSize="14sp"
+        android:textColor="@color/text_primary"
+        android:fontFamily="sans-serif-medium"
+        tools:text="🔒 Vacuum Sealed" />
+
+    <!-- Shelf Life Days -->
+    <TextView
+        android:id="@+id/textStorageDays"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textColor="@color/text_primary"
+        tools:text="12 days" />
+
+</LinearLayout>

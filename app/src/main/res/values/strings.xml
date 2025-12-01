@@ -1,106 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+    <!-- App Name -->
     <string name="app_name">Mushroom Grader</string>
-    <string name="scan">Scan Mushroom</string>
-    <string name="app">App</string>
-    <string name="categories">Categories</string>
-    <string name="list">List</string>
-    <string name="import_image">Import Image</string>
-    <string name="about_app">About App</string>
-    <string name="mushroom_species">Species:</string>
-    <string name="mushroom_type">Type:</string>
-    <string name="mushroom_grade">Grade:</string>
-    <string name="mushroom_habitat">Habitat:</string>
-    <string name="mushroom_nutrients">Nutrients/Vitamins:</string>
-    <string name="edible">Edible</string>
-    <string name="poisonous">Poisonous</string>
-    <string name="camera_permission_required">Camera permission is required</string>
-    <string name="about_description">Mushroom Grader is an AI-powered app that helps identify mushroom species, determines if they are edible or poisonous, and provides detailed information about their characteristics.</string>
-    <string name="version">Version 1.0</string>
-    <string name="capture_mushroom">Capture Mushroom</string>
-    <string name="retake">Retake</string>
-    <string name="analyze">Analyze</string>
-    <string name="back">Back</string>
-    <string name="history">History</string>
-    <string name="save">Save</string>
-    <string name="analysis_history">Analysis History</string>
-    <string name="no_history">No analysis history yet</string>
-    <string name="saved_successfully">Analysis saved successfully</string>
-    <!-- MainActivity strings -->
+
+    <!-- Main Activity -->
     <string name="welcome_message">Welcome to Mushroom Grader</string>
-    <string name="app_description">Identify and grade mushrooms using AI. Take a photo or select from gallery to get started.</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="select_from_gallery">Select from Gallery</string>
+    <string name="view_history">View History</string>
+    <string name="about">About</string>
 
-    <string name="class_id_format">Species: %s</string>
-    <string name="confidence_format">Confidence: %s%%</string>
+    <!-- Camera Activity -->
+    <string name="camera_permission_required">Camera permission is required</string>
+    <string name="grant_permission">Grant Permission</string>
+    <string name="capture_image">Capture Image</string>
+    <string name="flash_on">Flash On</string>
+    <string name="flash_off">Flash Off</string>
 
-
-    <!-- ResultActivity Strings -->
-    <string name="classification_result">Classification Result</string>
-    <string name="danger_poisonous">⚠️ DANGER - POISONOUS</string>
-    <string name="poisonous_warning">DO NOT CONSUME! This mushroom is toxic and can cause serious harm or death.</string>
-    <string name="warning_inedible">⚠️ INEDIBLE</string>
-    <string name="inedible_warning">This mushroom is not recommended for consumption.</string>
-    <string name="safe_to_eat">✓ SAFE TO EAT</string>
-    <string name="safe_warning">This mushroom is edible and safe for consumption.</string>
-    <string name="grade_premium">Premium quality - Best for sale</string>
-    <string name="grade_good">Good quality - Suitable for sale</string>
-    <string name="grade_fair">Fair quality - Can be sold</string>
-    <string name="grade_defective">Has defects - Not recommended for sale</string>
-    <string name="category_edible">Category: Edible Mushroom</string>
-    <string name="category_poisonous">Category: Poisonous Mushroom</string>
-    <string name="category_inedible">Category: Inedible Mushroom</string>
-    <string name="category_unknown">Category: Unknown</string>
-    <string name="detailed_information">Detailed Information</string>
-
-
-    <!-- HistoryActivity Strings -->
-    <string name="total_format">Total: %d</string>
-    <string name="poisonous_format">Poisonous: %d</string>
-    <string name="edible_format">Edible: %d</string>
-    <string name="badge_poisonous">⚠️ POISONOUS</string>
-    <string name="badge_safe">✓ SAFE</string>
-    <string name="clear_history_title">Clear All History?</string>
-    <string name="clear_history_message">This will permanently delete all classification history. This action cannot be undone.</string>
-    <string name="delete_all">Delete All</string>
-    <string name="error_title">Error</string>
-    <string name="error_load_history">Failed to load history: %s</string>
-    <string name="error_filter">Failed to filter results: %s</string>
-    <string name="error_clear_history">Failed to clear history: %s</string>
-
-    <string name="ok">OK</string>
-    <string name="cancel">Cancel</string>
-
-    <!-- GalleryProcessActivity Strings -->
-    <string name="processing_image">Processing Image</string>
-    <string name="error_no_image">No image selected</string>
-    <string name="error_classification_failed">Could not classify mushroom. Please try again with a clearer image.</string>
-    <string name="error_processing">Processing failed: %s</string>
-
-    <!-- AboutActivity Strings -->
-    <string name="about_title">About</string>
-    <string name="version_format">Version %s</string>
-    <string name="version_default">Version 1.0</string>
-
-
-    <string name="technical_details">Real-time mushroom classification\n• Detailed species information\n• Safety warnings for poisonous species\n• Classification history\n• Camera and gallery support\n• Offline processing</string>
-
-    <string name="app_credits">Developed by:\n• Ayana Jade F. Alejo\n• Alfaith Mae M. Luzon\n• Justine Jose B. Salvador\n\nAdviser:\n• Jaydee C. Ballaho, MIT\n\nDepartment of Computer Science\nCollege of Computing Studies\nWestern Mindanao State University\nZamboanga City\n\n© 2025-2026 All Rights Reserved</string>
-
-    <string name="app_disclaimer">⚠️ IMPORTANT DISCLAIMER:\n\nThis application is for educational and informational purposes only. While our AI model achieves high accuracy, it should NOT be the sole basis for determining mushroom safety.\n\nALWAYS:\n• Consult with mycology experts\n• Cross-reference with field guides\n• Never consume wild mushrooms without expert verification\n• Seek immediate medical attention if poisoning is suspected\n\nThe developers assume no liability for any consequences resulting from the use of this application.</string>
-
-    <string name="email_subject">Mushroom Grader App Inquiry</string>
-    <string name="send_email">Send Email</string>
-    <string name="share_app">Share App</string>
-
-    <string name="share_text">Check out Mushroom Grader - An AI-powered app for mushroom identification!\n\nFeatures:\n• Identify 12 mushroom species\n• Detect poisonous mushrooms\n• Grade mushroom quality\n• 97.7% accuracy\n\nDownload: [App Store Link]</string>
-
-
-    <!-- Gallery Process Strings -->
-    <string name="selected_mushroom_image">Selected mushroom image</string>
+    <!-- Gallery Process Activity -->
+    <string name="processing_image">Processing Image…</string>
+    <string name="select_image">Select Image</string>
+    <string name="selected_mushroom_image">Selected Mushroom Image</string>
     <string name="analyzing_mushroom">Analyzing mushroom…</string>
 
-    <!-- Add these to your res/values/strings.xml -->
-    <string name="cannot_send_email">Cannot send email</string>
+    <!-- Result Activity -->
+    <string name="classification_result">Classification Result</string>
+    <string name="confidence">Confidence</string>
+    <string name="safe_to_eat">Safe to Eat</string>
+    <string name="poisonous">Poisonous</string>
+    <string name="inedible">Inedible</string>
+    <string name="grade">Grade</string>
+    <string name="category">Category</string>
+    <string name="share_result">Share Result</string>
+    <string name="take_another">Take Another</string>
+    <string name="back_to_home">Back to Home</string>
+    <string name="more_info">More Info</string>
+    <string name="detailed_information">Detailed Information</string>
 
+    <!-- Result Activity - Formatted Strings -->
+    <string name="confidence_format">Confidence: %1$s</string>
+    <string name="category_format">Category: %1$s</string>
 
+    <!-- Safety Status Strings -->
+    <string name="poisonous_title">⚠️ POISONOUS</string>
+    <string name="poisonous_message">This mushroom is POISONOUS and MUST NOT be consumed.</string>
+    <string name="inedible_title">⚠️ INEDIBLE</string>
+    <string name="inedible_message">This mushroom is not recommended for consumption.</string>
+    <string name="safe_to_eat_title">✓ SAFE TO EAT</string>
+    <string name="safe_to_eat_message">This mushroom appears to be safe to consume.</string>
+
+    <!-- Storage & Shelf Life Strings -->
+    <string name="storage_shelf_life">Storage &amp; Shelf Life</string>
+    <string name="storage_predictions_title">📦 Storage &amp; Shelf Life Predictions</string>
+    <string name="storage_predictions_subtitle">Estimated shelf life for different storage methods</string>
+    <string name="tap_for_details">💡 Tap any method for detailed storage tips and warnings</string>
+    <string name="storage_method">Storage Method</string>
+    <string name="shelf_life">Shelf Life</string>
+    <string name="storage_details">Storage Details</string>
+    <string name="select_storage_method">Select a Storage Method</string>
+
+    <!-- Storage Method Formatting -->
+    <string name="storage_method_format">%1$s %2$s</string>
+    <string name="days_format">%1$d days</string>
+    <string name="days_suffix">days</string>
+    <string name="shelf_life_format">⏱️ Shelf Life: %1$d days</string>
+    <string name="expires_format">📅 Expires: %1$s</string>
+    <string name="expires_on_format">Expires: %1$s</string>
+    <string name="temperature_format">🌡️ Temperature: %1$s</string>
+    <string name="store_at_format">🌡️ Store at: %1$s</string>
+
+    <!-- Storage Method Names -->
+    <string name="vacuum_sealed">🔒 Vacuum Sealed</string>
+    <string name="refrigerated_sealed">📦 Refrigerated (Sealed Container)</string>
+    <string name="refrigerated_open">🧊 Refrigerated (Paper Bag/Open)</string>
+    <string name="room_temperature">🌡️ Room Temperature</string>
+    <string name="frozen">❄️ Frozen (-18°C)</string>
+
+    <!-- Storage Info Labels -->
+    <string name="until">until</string>
+    <string name="view_all_methods">View All Methods</string>
+    <string name="expires_on">Expires</string>
+    <string name="temperature">Temperature</string>
+    <string name="storage_tips">Storage Tips</string>
+    <string name="warnings">Warnings</string>
+    <string name="unknown_mushroom">Unknown Mushroom</string>
+
+    <!-- Share Strings -->
+    <string name="share_result_header">Mushroom Classification Result</string>
+    <string name="share_species">Species: %1$s</string>
+    <string name="share_confidence">Confidence: %1$s</string>
+    <string name="share_safety">Safety: %1$s</string>
+    <string name="share_grade">Grade: %1$s</string>
+    <string name="share_subject">Mushroom Classification: %1$s</string>
+
+    <!-- History Activity -->
+    <string name="history">History</string>
+    <string name="analysis_history">Analysis History</string>
+    <string name="no_history">No classification history yet</string>
+    <string name="clear_history">Clear History</string>
+    <string name="delete_all">Delete All</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="clear_history_message">Are you sure you want to delete all history records? This action cannot be undone.</string>
+
+    <!-- About Activity -->
+    <string name="about_description">Mushroom Grader is an AI-powered mobile application that helps you identify and grade mushrooms using advanced machine learning technology. Simply take a photo or select from gallery to get instant classification results.</string>
+    <string name="technical_details">This app uses YOLOv8 and EfficientNet models trained on thousands of mushroom images. The classification includes safety assessment, grading, and storage recommendations for edible varieties.</string>
+    <string name="app_credits">Developed by [Your Name/Team]\n\nPowered by TensorFlow Lite\nYOLOv8 for object detection\nEfficientNet for classification\n\nVersion 1.0.0</string>
+    <string name="app_disclaimer">⚠️ IMPORTANT DISCLAIMER:\n\nThis app is for educational purposes only. Always consult with a professional mycologist before consuming any mushroom. Never rely solely on this app for mushroom identification. Misidentification can be fatal.\n\nThe developers assume no liability for any consequences resulting from the use of this application.</string>
+
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="close">Close</string>
+    <string name="error">Error</string>
+    <string name="loading">Loading…</string>
+    <string name="retry">Retry</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <!-- Menu Strings -->
+    <string name="search">Search</string>
+    <string name="sort">Sort</string>
+    <string name="filter">Filter</string>
+    <string name="settings">Settings</string>
+    <string name="newest_first">Newest First</string>
+    <string name="oldest_first">Oldest First</string>
+    <string name="highest_confidence">Highest Confidence</string>
+    <string name="lowest_confidence">Lowest Confidence</string>
+    <string name="name_a_z">Name (A-Z)</string>
+    <string name="name_z_a">Name (Z-A)</string>
+
+    <!-- Error Messages -->
+    <string name="error_camera_failed">Failed to open camera</string>
+    <string name="error_image_load_failed">Failed to load image</string>
+    <string name="error_classification_failed">Classification failed. Please try again.</string>
+    <string name="error_no_image_selected">No image selected</string>
+    <string name="error_permission_denied">Permission denied</string>
+    <string name="error_model_load_failed">Failed to load ML model</string>
+
+    <!-- Success Messages -->
+    <string name="success_saved">Saved successfully</string>
+    <string name="success_deleted">Deleted successfully</string>
+    <string name="success_cleared">History cleared</string>
+
+    <!-- Toasts -->
+    <string name="toast_image_captured">Image captured</string>
+    <string name="toast_image_selected">Image selected</string>
+    <string name="toast_processing">Processing…</string>
+
+    <!-- Content Descriptions (for accessibility) -->
+    <string name="cd_mushroom_image">Mushroom image</string>
+    <string name="cd_camera_button">Camera button</string>
+    <string name="cd_gallery_button">Gallery button</string>
+    <string name="cd_flash_button">Flash toggle button</string>
+    <string name="cd_back_button">Back button</string>
+    <string name="no_history_message">Your classification history will appear here</string>
+    <string name="clear_all">Clear All</string>
 </resources>

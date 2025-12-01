@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
+import android.view.Surface
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -32,6 +34,9 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var imageProcessor: ImageProcessor
     private lateinit var mlModelHelper: MLModelHelper
     private var imageCapture: ImageCapture? = null
+
+    // ✅ FIXED: Changed to lowercase to follow Kotlin naming conventions
+    private val tag = "CameraActivity"
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -65,7 +70,6 @@ class CameraActivity : AppCompatActivity() {
         binding.btnCapture.setOnClickListener {
             takePhoto()
         }
-
         binding.btnClose.setOnClickListener {
             finish()
         }
@@ -80,6 +84,7 @@ class CameraActivity : AppCompatActivity() {
                 bindCameraUseCases(cameraProvider)
             } catch (e: Exception) {
                 Toast.makeText(this, "Failed to start camera: ${e.message}", Toast.LENGTH_SHORT).show()
+                Log.e(tag, "Camera start failed", e)
             }
         }, ContextCompat.getMainExecutor(this))
     }
@@ -91,8 +96,11 @@ class CameraActivity : AppCompatActivity() {
                 it.setSurfaceProvider(binding.previewView.surfaceProvider)
             }
 
+        // ✅ FIXED: Removed deprecated setTargetResolution() and defaultDisplay
+        // Using aspect ratio instead for better compatibility
         imageCapture = ImageCapture.Builder()
-            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
+            .setTargetRotation(Surface.ROTATION_0) // Portrait orientation
             .build()
 
         val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -105,8 +113,10 @@ class CameraActivity : AppCompatActivity() {
                 preview,
                 imageCapture
             )
+            Log.d(tag, "✅ Camera bound successfully with quality optimization")
         } catch (e: Exception) {
             Toast.makeText(this, "Failed to bind camera: ${e.message}", Toast.LENGTH_SHORT).show()
+            Log.e(tag, "Camera binding failed", e)
         }
     }
 
@@ -135,6 +145,7 @@ class CameraActivity : AppCompatActivity() {
                         "Photo capture failed: ${exception.message}",
                         Toast.LENGTH_SHORT
                     ).show()
+                    Log.e(tag, "Photo capture failed", exception)
                 }
             }
         )
@@ -144,8 +155,14 @@ class CameraActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.Default) {
+                    // Apply initial processing (rotation, resize)
                     val bitmap = imageProcessor.processImage(imageFile.absolutePath)
-                    mlModelHelper.classifyImage(bitmap)
+
+                    // ✅ Apply image enhancement for better detection
+                    val enhancedBitmap = imageProcessor.enhanceImageForDetection(bitmap)
+
+                    // Classify the enhanced image
+                    mlModelHelper.classifyImage(enhancedBitmap)
                 }
 
                 if (result != null) {
@@ -155,7 +172,6 @@ class CameraActivity : AppCompatActivity() {
                     binding.btnCapture.isEnabled = true
                     showNonMushroomError()
                 }
-
             } catch (e: Exception) {
                 binding.progressBar.visibility = android.view.View.GONE
                 binding.btnCapture.isEnabled = true
@@ -164,6 +180,7 @@ class CameraActivity : AppCompatActivity() {
                     "Classification failed: ${e.message}",
                     Toast.LENGTH_SHORT
                 ).show()
+                Log.e(tag, "Classification error", e)
             }
         }
     }
@@ -176,8 +193,14 @@ class CameraActivity : AppCompatActivity() {
                         "This could mean:\n" +
                         "• The image shows a non-mushroom object\n" +
                         "• The mushroom is partially visible or obscured\n" +
-                        "• The image is unclear or out of focus\n\n" +
-                        "Please retake a clearer picture of an entire mushroom."
+                        "• The image is unclear or out of focus\n" +
+                        "• Poor lighting conditions\n\n" +
+                        "💡 Tips for better detection:\n" +
+                        "• Ensure good natural lighting\n" +
+                        "• Keep the mushroom centered\n" +
+                        "• Make sure the entire mushroom is visible\n" +
+                        "• Avoid shadows and reflections\n" +
+                        "• Hold camera steady to avoid blur"
             )
             .setPositiveButton("Try Again") { _, _ -> }
             .setNegativeButton("Cancel") { _, _ -> finish() }
@@ -194,11 +217,13 @@ class CameraActivity : AppCompatActivity() {
             putExtra("grade", result.grade)
             putExtra("imagePath", imageFile.absolutePath)
         }
+
         startActivity(intent)
         finish()
     }
 
     private fun createFile(): File {
+        // ✅ FIXED: Typo "Hmmss" changed to "HHmmss"
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
         val storageDir = getExternalFilesDir(null)
         return File.createTempFile("MUSHROOM_${timeStamp}_", ".jpg", storageDir)

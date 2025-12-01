@@ -5,33 +5,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ResultActivity">
+    android:background="@color/background">
 
-    <!-- App Bar -->
+    <!-- AppBar with Toolbar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <com.google.android.material.appbar.MaterialToolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Classification Result"
-            style="@style/Widget.Material3.Toolbar"
-            tools:ignore="HardcodedText" />
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Progress Bar for PDF Export -->
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone"
-        android:elevation="8dp" />
-
-    <!-- Scrollable Content -->
+    <!-- Main Scrollable Content -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -48,41 +38,63 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="16dp"
+                app:cardCornerRadius="12dp"
                 app:cardElevation="4dp">
 
                 <ImageView
                     android:id="@+id/ivMushroom"
                     android:layout_width="match_parent"
-                    android:layout_height="300dp"
+                    android:layout_height="250dp"
                     android:scaleType="centerCrop"
-                    android:contentDescription="Captured mushroom"
-                    tools:ignore="HardcodedText"
-                    tools:src="@mipmap/ic_launcher" />
+                    android:contentDescription="@string/app_name"
+                    tools:src="@android:drawable/ic_menu_gallery" />
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Mushroom Name -->
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvMushroomName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="Button Mushroom"
-                android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
-                android:textStyle="bold"
-                tools:ignore="HardcodedText" />
-
-            <!-- Confidence -->
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvConfidence"
-                android:layout_width="wrap_content"
+            <!-- Classification Info Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:text="Confidence: 95.5%"
-                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                tools:ignore="HardcodedText" />
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tvMushroomName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"
+                        tools:text="Oyster - Class A" />
+
+                    <TextView
+                        android:id="@+id/tvConfidence"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textSize="16sp"
+                        android:textColor="@color/text_secondary"
+                        tools:text="Confidence: 95.2%" />
+
+                    <TextView
+                        android:id="@+id/tvCategory"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_secondary"
+                        tools:text="Category: EDIBLE" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Safety Status Card -->
             <com.google.android.material.card.MaterialCardView
@@ -91,7 +103,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="2dp">
+                app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -99,29 +111,27 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <com.google.android.material.textview.MaterialTextView
+                    <TextView
                         android:id="@+id/tvSafetyTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:text="✓ SAFE TO EAT"
-                        android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
+                        android:textSize="20sp"
                         android:textStyle="bold"
-                        tools:ignore="HardcodedText" />
+                        tools:text="✓ SAFE TO EAT" />
 
-                    <com.google.android.material.textview.MaterialTextView
+                    <TextView
                         android:id="@+id/tvSafetyMessage"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="This mushroom is edible and safe for consumption."
-                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-                        tools:ignore="HardcodedText" />
+                        android:layout_marginTop="8dp"
+                        android:textSize="14sp"
+                        tools:text="This mushroom is safe to consume." />
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Grade Card (visible only for graded mushrooms) -->
+            <!-- Grade Card (Optional - shows only when grade exists) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardGrade"
                 android:layout_width="match_parent"
@@ -129,9 +139,48 @@
                 android:layout_marginBottom="16dp"
                 android:visibility="gone"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="2dp"
-                app:strokeColor="?attr/colorPrimary">
+                app:cardElevation="4dp"
+                tools:visibility="visible">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/grade"
+                        android:textSize="16sp"
+                        android:textColor="@color/text_secondary" />
+
+                    <TextView
+                        android:id="@+id/tvGradeValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/primary"
+                        tools:text="Class A" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Storage Predictions Card (Table Format - Only for Edible) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardStoragePredictions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@color/storage_card_background"
+                tools:visibility="visible">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -139,33 +188,77 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <com.google.android.material.textview.MaterialTextView
+                    <!-- Header -->
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Quality Grade"
-                        android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                        android:layout_marginBottom="8dp"
-                        tools:ignore="HardcodedText" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvGradeValue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Class A"
-                        android:textAppearance="@style/TextAppearance.Material3.HeadlineLarge"
-                        android:textColor="?attr/colorPrimary"
+                        android:text="@string/storage_predictions_title"
+                        android:textSize="18sp"
                         android:textStyle="bold"
-                        android:layout_marginBottom="8dp"
-                        tools:ignore="HardcodedText" />
+                        android:textColor="@color/text_primary" />
 
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvGradeDescription"
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Premium quality - Best for sale"
-                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        tools:ignore="HardcodedText" />
+                        android:layout_marginTop="4dp"
+                        android:text="@string/storage_predictions_subtitle"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary" />
+
+                    <!-- Divider -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="12dp"
+                        android:background="@color/divider" />
+
+                    <!-- Table Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="@color/primary_light"
+                        android:padding="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:text="@string/storage_method"
+                            android:textStyle="bold"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/shelf_life"
+                            android:textStyle="bold"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_primary"
+                            android:gravity="center" />
+
+                    </LinearLayout>
+
+                    <!-- Dynamic Storage Rows Container -->
+                    <LinearLayout
+                        android:id="@+id/layoutStorageRows"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+
+                    <!-- Hint Text -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/tap_for_details"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary"
+                        android:textStyle="italic"
+                        android:gravity="center" />
 
                 </LinearLayout>
 
@@ -177,7 +270,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="2dp">
+                app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -185,101 +278,92 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <com.google.android.material.textview.MaterialTextView
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Information"
-                        android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                        android:layout_marginBottom="12dp"
-                        tools:ignore="HardcodedText" />
+                        android:text="@string/detailed_information"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginBottom="8dp" />
 
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvCategory"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Category: Edible Mushroom"
-                        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
-                        android:layout_marginBottom="8dp"
-                        tools:ignore="HardcodedText" />
-
-                    <com.google.android.material.textview.MaterialTextView
+                    <TextView
                         android:id="@+id/tvDetailedInfo"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Button mushrooms are safe and commonly cultivated"
-                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        tools:ignore="HardcodedText" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnMoreInfo"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="More Information"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        tools:ignore="HardcodedText" />
+                        android:textSize="14sp"
+                        android:textColor="@color/text_secondary"
+                        android:lineSpacingExtra="4dp"
+                        tools:text="Detailed mushroom information will appear here with scientific details, habitat, and characteristics." />
 
                 </LinearLayout>
-
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Action Buttons -->
+            <!-- Action Buttons Section -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_marginTop="8dp">
 
-                <!-- Export PDF Button (NEW!) -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnExportPdf"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="Export as PDF"
-                    app:icon="@android:drawable/ic_menu_save"
-                    style="@style/Widget.Material3.Button"
-                    tools:ignore="HardcodedText" />
-
-                <!-- Share Button (NEW!) -->
+                <!-- Share Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnShare"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:text="Share Result"
+                    android:text="@string/share_result"
+                    android:textSize="16sp"
                     app:icon="@android:drawable/ic_menu_share"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    tools:ignore="HardcodedText" />
+                    app:iconGravity="start"
+                    style="@style/Widget.Material3.Button" />
 
+                <!-- More Info Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnMoreInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/more_info"
+                    android:textSize="16sp"
+                    app:icon="@android:drawable/ic_menu_info_details"
+                    app:iconGravity="start"
+                    style="@style/Widget.Material3.Button.TonalButton" />
+
+                <!-- Take Another Photo Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnTakeAnother"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:text="Take Another Photo"
+                    android:text="@string/take_another"
+                    android:textSize="16sp"
                     app:icon="@android:drawable/ic_menu_camera"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    tools:ignore="HardcodedText" />
+                    app:iconGravity="start"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
 
+                <!-- View History Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnViewHistory"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:text="View History"
+                    android:text="@string/view_history"
+                    android:textSize="16sp"
                     app:icon="@android:drawable/ic_menu_recent_history"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    tools:ignore="HardcodedText" />
+                    app:iconGravity="start"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
 
+                <!-- Back to Home Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnBackHome"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Back to Home"
+                    android:text="@string/back_to_home"
+                    android:textSize="16sp"
                     app:icon="@android:drawable/ic_menu_revert"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    tools:ignore="HardcodedText" />
+                    app:iconGravity="start"
+                    style="@style/Widget.Material3.Button.TextButton" />
 
             </LinearLayout>
 
