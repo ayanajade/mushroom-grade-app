@@ -37,22 +37,20 @@ class MLModelHelper(private val context: Context) {
             val model = FileUtil.loadMappedFile(context, MODEL_PATH)
             interpreter = Interpreter(model)
             isInitialized = true
-
             MushroomDetectionConfig.initialize(NUM_CLASSES) { classId ->
                 getClassNameByIndex(classId)
             }
-
-            Log.d(TAG, "Model initialized: $NUM_CLASSES classes")
+            Log.d(TAG, "✅ Model initialized: $NUM_CLASSES classes")
             Log.d(TAG, "Detection Mode: ${MushroomDetectionConfig.getDetectionModeDescription()}")
         } catch (e: Exception) {
-            Log.e(TAG, "Error loading model", e)
+            Log.e(TAG, "❌ Error loading model", e)
             isInitialized = false
         }
     }
 
     fun classifyImage(bitmap: Bitmap): ClassificationResult? {
         if (!isInitialized || interpreter == null) {
-            Log.e(TAG, "Model not initialized")
+            Log.e(TAG, "❌ Model not initialized")
             return null
         }
 
@@ -112,7 +110,7 @@ class MLModelHelper(private val context: Context) {
             return topMushroomPrediction
 
         } catch (e: Exception) {
-            Log.e(TAG, "Classification failed", e)
+            Log.e(TAG, "❌ Classification failed", e)
             return null
         }
     }
@@ -131,7 +129,6 @@ class MLModelHelper(private val context: Context) {
             }
 
             val topPrediction = topPredictions[0]
-
             if (topPrediction.confidence < MushroomDetectionConfig.confidenceThreshold) {
                 Log.d(TAG, "REJECTED: Confidence too low (${topPrediction.confidence})")
                 return null
@@ -171,7 +168,7 @@ class MLModelHelper(private val context: Context) {
             return topPrediction.copy(confidence = calibratedConfidence)
 
         } catch (e: Exception) {
-            Log.e(TAG, "Classification validation failed", e)
+            Log.e(TAG, "❌ Classification validation failed", e)
             return null
         }
     }
@@ -179,7 +176,6 @@ class MLModelHelper(private val context: Context) {
     private fun getTopPredictions(bitmap: Bitmap, topK: Int): List<ClassificationResult> {
         val inputBuffer = preprocessImage(bitmap)
         val output = Array(1) { FloatArray(NUM_CLASSES) }
-
         interpreter?.run(inputBuffer, output)
 
         val predictions = output[0]
@@ -217,8 +213,6 @@ class MLModelHelper(private val context: Context) {
     private fun validateVisualFeatures(bitmap: Bitmap): Boolean {
         val width = bitmap.width.coerceAtMost(100)
         val height = bitmap.height.coerceAtMost(100)
-
-        // ✅ FIXED: Using KTX extension Bitmap.scale()
         val scaled = bitmap.scale(width, height, filter = true)
 
         var mushroomColorScore = 0f
@@ -227,7 +221,6 @@ class MLModelHelper(private val context: Context) {
 
         for (x in 0 until width) {
             for (y in 0 until height) {
-                // ✅ FIXED: Using KTX extension Bitmap.get() instead of getPixel()
                 val pixel = scaled[x, y]
                 val r = (pixel shr 16) and 0xFF
                 val g = (pixel shr 8) and 0xFF
@@ -257,8 +250,10 @@ class MLModelHelper(private val context: Context) {
         }
 
         scaled.recycle()
+
         val colorRatio = mushroomColorScore / pixelCount
         val textureRatio = organicTextureScore / pixelCount
+
         Log.d(TAG, "Visual validation - Color: $colorRatio, Texture: $textureRatio")
 
         return colorRatio > MushroomDetectionConfig.minMushroomColorRatio &&
@@ -272,8 +267,6 @@ class MLModelHelper(private val context: Context) {
     private fun expandedMushroomColorCheck(bitmap: Bitmap): Boolean {
         val width = bitmap.width.coerceAtMost(100)
         val height = bitmap.height.coerceAtMost(100)
-
-        // ✅ FIXED: Using KTX extension Bitmap.scale()
         val scaled = bitmap.scale(width, height, filter = true)
 
         var colorScore = 0f
@@ -281,7 +274,6 @@ class MLModelHelper(private val context: Context) {
 
         for (x in 0 until width) {
             for (y in 0 until height) {
-                // ✅ FIXED: Using KTX extension Bitmap.get()
                 val pixel = scaled[x, y]
                 val r = (pixel shr 16) and 0xFF
                 val g = (pixel shr 8) and 0xFF
@@ -306,23 +298,22 @@ class MLModelHelper(private val context: Context) {
         }
 
         scaled.recycle()
+
         val colorRatio = if (pixelCount > 0) colorScore / pixelCount else 0f
         Log.d(TAG, "Color ratio: $colorRatio (threshold: ${MushroomDetectionConfig.minMushroomColorRatio})")
+
         return colorRatio > MushroomDetectionConfig.minMushroomColorRatio
     }
 
     private fun checkImageQuality(bitmap: Bitmap): Boolean {
         val width = bitmap.width.coerceAtMost(50)
         val height = bitmap.height.coerceAtMost(50)
-
-        // ✅ FIXED: Using KTX extension Bitmap.scale()
         val scaled = bitmap.scale(width, height, filter = true)
 
         var laplacianScore = 0.0
 
         for (x in 1 until (width - 1)) {
             for (y in 1 until (height - 1)) {
-                // ✅ FIXED: Using KTX extension Bitmap.get()
                 val center = scaled[x, y]
                 val neighbors = intArrayOf(
                     scaled[x - 1, y],
@@ -345,6 +336,7 @@ class MLModelHelper(private val context: Context) {
         }
 
         scaled.recycle()
+
         val sharpness = laplacianScore / (width * height)
         Log.d(TAG, "Image sharpness: $sharpness")
 
@@ -358,7 +350,6 @@ class MLModelHelper(private val context: Context) {
                 if (dx == 0 && dy == 0) continue
                 val nx = (x + dx).coerceIn(0, bitmap.width - 1)
                 val ny = (y + dy).coerceIn(0, bitmap.height - 1)
-                // ✅ FIXED: Using KTX extension Bitmap.get()
                 neighbors.add(bitmap[nx, ny])
             }
         }
@@ -391,7 +382,6 @@ class MLModelHelper(private val context: Context) {
     }
 
     private fun preprocessImage(bitmap: Bitmap): ByteBuffer {
-        // ✅ FIXED: Using KTX extension Bitmap.scale()
         val resizedBitmap = bitmap.scale(INPUT_SIZE, INPUT_SIZE, filter = true)
         val inputBuffer = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * 3)
         inputBuffer.order(ByteOrder.nativeOrder())
@@ -418,19 +408,19 @@ class MLModelHelper(private val context: Context) {
 
     private fun createClassificationResult(classId: Int, confidence: Float): ClassificationResult? {
         val classes = arrayOf(
-            Triple("Amanita Pantherina", true, MushroomCategory.POISONOUS), // 0
-            Triple("Amanita phalloides", true, MushroomCategory.POISONOUS), // 1
-            Triple("Amanita virosa", true, MushroomCategory.POISONOUS), // 2
-            Triple("Button Mushroom", false, MushroomCategory.EDIBLE), // 3
-            Triple("Cinnabar Polypores", true, MushroomCategory.POISONOUS), // 4
-            Triple("Daedaleopsis confragosa", true, MushroomCategory.POISONOUS), // 5
-            Triple("Ganoderma applanatum", true, MushroomCategory.POISONOUS), // 6
-            Triple("Oyster - Class A", false, MushroomCategory.EDIBLE), // 7
-            Triple("Oyster - Class B", false, MushroomCategory.EDIBLE), // 8
-            Triple("Oyster - Class C", false, MushroomCategory.EDIBLE), // 9
-            Triple("Oyster - Cluster", false, MushroomCategory.EDIBLE), // 10
-            Triple("Oyster - Defective", false, MushroomCategory.INEDIBLE), // 11
-            Triple("Shiitake Mushroom", false, MushroomCategory.EDIBLE) // 12
+            Triple("Amanita Pantherina", true, MushroomCategory.POISONOUS),      // 0
+            Triple("Amanita phalloides", true, MushroomCategory.POISONOUS),       // 1
+            Triple("Amanita virosa", true, MushroomCategory.POISONOUS),           // 2
+            Triple("Button Mushroom", false, MushroomCategory.EDIBLE),            // 3
+            Triple("Cinnabar Polypores", true, MushroomCategory.POISONOUS),       // 4
+            Triple("Daedaleopsis confragosa", true, MushroomCategory.POISONOUS),  // 5
+            Triple("Ganoderma applanatum", true, MushroomCategory.POISONOUS),     // 6
+            Triple("Oyster - Class A", false, MushroomCategory.EDIBLE),           // 7
+            Triple("Oyster - Class B", false, MushroomCategory.EDIBLE),           // 8
+            Triple("Oyster - Class C", false, MushroomCategory.EDIBLE),           // 9
+            Triple("Oyster - Cluster", false, MushroomCategory.EDIBLE),           // 10
+            Triple("Oyster - Defective", false, MushroomCategory.INEDIBLE),       // 11
+            Triple("Shiitake Mushroom", false, MushroomCategory.EDIBLE)           // 12
         )
 
         val (name, isPoisonous, category) = if (classId in classes.indices) {
@@ -479,131 +469,241 @@ class MLModelHelper(private val context: Context) {
         return if (classId in classes.indices) classes[classId] else "Unknown"
     }
 
-    fun getMushroomInfo(classId: Int): String {
+    /**
+     * ✅ UPDATED: Get mushroom info with DYNAMIC features based on actual image
+     * Now accepts optional characteristics to show accurate physical description
+     */
+    fun getMushroomInfo(
+        classId: Int,
+        characteristics: MushroomCharacteristics? = null
+    ): String {
         return when (classId) {
-            0 -> """
-                🍄 AMANITA PANTHERINA (Panther Cap)
-                ⚠️ HIGHLY POISONOUS - DO NOT CONSUME
-                - Identification: Brown cap w/ white warts, white gills & stem
-                - Habitat: Deciduous/coniferous forests in North America, Europe, Asia
-                - Toxins: Ibotenic acid, muscimol
-                - Symptoms: Confusion, hallucinations, vomiting
-                - First Aid: Induce vomiting, seek emergency care immediately
-            """.trimIndent()
+            0 -> buildMushroomInfo(
+                name = "AMANITA PANTHERINA (Panther Cap)",
+                safety = "⚠️ HIGHLY POISONOUS - DO NOT CONSUME",
+                characteristics = characteristics,
+                staticFeatures = "Brown cap w/ white warts, white gills & stem",
+                habitat = "Deciduous/coniferous forests in North America, Europe, Asia",
+                toxins = "Ibotenic acid, muscimol",
+                symptoms = "Confusion, hallucinations, vomiting",
+                firstAid = "Induce vomiting, seek emergency care immediately"
+            )
 
-            1 -> """
-                🍄 AMANITA PHALLOIDES (Death Cap)
-                ⚠️ EXTREMELY DEADLY - DO NOT CONSUME
-                - Identification: Pale yellow/green cap, white gills, volva at base
-                - Habitat: Oak, beech forests, introduced worldwide
-                - Toxins: Amatoxins
-                - Symptoms: Severe vomiting, abdominal pain, liver failure
-                - First Aid: Hospitalization, activated charcoal, liver support
-            """.trimIndent()
+            1 -> buildMushroomInfo(
+                name = "AMANITA PHALLOIDES (Death Cap)",
+                safety = "⚠️ EXTREMELY DEADLY - DO NOT CONSUME",
+                characteristics = characteristics,
+                staticFeatures = "Pale yellow/green cap, white gills, volva at base",
+                habitat = "Oak, beech forests, introduced worldwide",
+                toxins = "Amatoxins",
+                symptoms = "Severe vomiting, abdominal pain, liver failure",
+                firstAid = "Hospitalization, activated charcoal, liver support"
+            )
 
-            2 -> """
-                🍄 AMANITA VIROSA (Destroying Angel)
-                ⚠️ EXTREMELY DEADLY - DO NOT CONSUME
-                - Identification: Pure white, smooth cap, ring, bulbous base
-                - Habitat: Deciduous/evergreen woods, widespread in Europe, Asia
-                - Toxins: Amatoxins
-                - Symptoms: Delayed onset, vomiting, kidney/liver failure
-                - First Aid: Immediate medical attention, treat as medical emergency
-            """.trimIndent()
+            2 -> buildMushroomInfo(
+                name = "AMANITA VIROSA (Destroying Angel)",
+                safety = "⚠️ EXTREMELY DEADLY - DO NOT CONSUME",
+                characteristics = characteristics,
+                staticFeatures = "Pure white, smooth cap, ring, bulbous base",
+                habitat = "Deciduous/evergreen woods, widespread in Europe, Asia",
+                toxins = "Amatoxins",
+                symptoms = "Delayed onset, vomiting, kidney/liver failure",
+                firstAid = "Immediate medical attention, treat as medical emergency"
+            )
 
-            3 -> """
-                🍄 BUTTON MUSHROOM (Agaricus bisporus)
-                ✅ EDIBLE - SAFE TO EAT
-                - Features: White or brown cap, pink to brown gills, pleasant smell
-                - Habitat: Commercially grown, global cultivation
-                - Best Uses: Salads, soups, pizzas, sauteed, versatile in cuisine
-                - Nutritional Value: High in B vitamins, selenium, low-calorie protein source
-                - Safety: Safe when fresh and properly cooked
-            """.trimIndent()
+            3 -> buildMushroomInfo(
+                name = "BUTTON MUSHROOM (Agaricus bisporus)",
+                safety = "✅ EDIBLE - SAFE TO EAT",
+                characteristics = characteristics,
+                staticFeatures = "White or brown cap, pink to brown gills, pleasant smell",
+                habitat = "Commercially grown, global cultivation",
+                bestUses = "Salads, soups, pizzas, sauteed, versatile in cuisine",
+                nutrition = "High in B vitamins, selenium, low-calorie protein source",
+                safetyNote = "Safe when fresh and properly cooked"
+            )
 
-            4 -> """
-                🍄 CINNABAR POLYPORES (Pycnoporus cinnabarinus)
-                ⚠️ INEDIBLE — NOT TOXIC BUT TOO TOUGH
-                - Features: Bright red, flat shelf-like fruiting body, hard texture
-                - Habitat: On dead hardwood worldwide, tropics to temperate
-                - Culinary Use: Not edible, used for dyes/pigments
-                - Ethnomedicine: Limited use in traditional medicine
-            """.trimIndent()
+            4 -> buildMushroomInfo(
+                name = "CINNABAR POLYPORES (Pycnoporus cinnabarinus)",
+                safety = "⚠️ INEDIBLE — NOT TOXIC BUT TOO TOUGH",
+                characteristics = characteristics,
+                staticFeatures = "Bright red, flat shelf-like fruiting body, hard texture",
+                habitat = "On dead hardwood worldwide, tropics to temperate",
+                culinaryUse = "Not edible, used for dyes/pigments",
+                medicinalUse = "Limited use in traditional medicine"
+            )
 
-            5 -> """
-                🍄 DAEDALEOPSIS CONFRAGOSA (Blushing Bracket)
-                ⚠️ INEDIBLE
-                - Features: Tan/grey top, reddish bruising, maze-like pores beneath
-                - Habitat: Fallen willow, birch, hardwood logs throughout Eurasia
-                - Culinary: Not eaten; used for decoration/woodcraft
-            """.trimIndent()
+            5 -> buildMushroomInfo(
+                name = "DAEDALEOPSIS CONFRAGOSA (Blushing Bracket)",
+                safety = "⚠️ INEDIBLE",
+                characteristics = characteristics,
+                staticFeatures = "Tan/grey top, reddish bruising, maze-like pores beneath",
+                habitat = "Fallen willow, birch, hardwood logs throughout Eurasia",
+                culinaryUse = "Not eaten; used for decoration/woodcraft"
+            )
 
-            6 -> """
-                🍄 GANODERMA APPLANATUM (Artist's Conk)
-                ⚠️ NOT FOR CULINARY USE - MEDICINAL REMEDY ONLY
-                - Features: Brown crust, very woody, hard perennial bracket
-                - Habitat: On dead/dying hardwood globally
-                - Use: Traditional medicine (immune boosting, anti-inflammatory)
-                - Culinary: Not edible; boiled for extracts/teas (very bitter)
-            """.trimIndent()
+            6 -> buildMushroomInfo(
+                name = "GANODERMA APPLANATUM (Artist's Conk)",
+                safety = "⚠️ NOT FOR CULINARY USE - MEDICINAL REMEDY ONLY",
+                characteristics = characteristics,
+                staticFeatures = "Brown crust, very woody, hard perennial bracket",
+                habitat = "On dead/dying hardwood globally",
+                use = "Traditional medicine (immune boosting, anti-inflammatory)",
+                culinaryNote = "Not edible; boiled for extracts/teas (very bitter)"
+            )
 
-            7 -> """
-                🍄 OYSTER MUSHROOM - CLASS A (Premium)
-                ✅ EDIBLE — PREMIUM QUALITY
-                - Features: Firm, white, unblemished, large fan-shaped cap
-                - Best Use: Fresh, grilling, roasting, best flavor and texture
-                - Habitat: Cultivated on logs or commercial substrate
-                - Nutrition: Rich in protein, B vitamins, antioxidants
-            """.trimIndent()
+            7 -> buildEdibleOysterInfo(
+                grade = "CLASS A (Premium)",
+                quality = "✅ EDIBLE — PREMIUM QUALITY",
+                characteristics = characteristics,
+                staticFeatures = "Firm, white, unblemished, large fan-shaped cap",
+                bestUse = "Fresh, grilling, roasting, best flavor and texture"
+            )
 
-            8 -> """
-                🍄 OYSTER MUSHROOM - CLASS B (Good)
-                ✅ EDIBLE — GOOD QUALITY
-                - Features: Minor defects, still firm and fresh, slightly smaller
-                - Use: Suitable for cooked dishes, stir-fries, soups, stews
-                - Habitat: Commercial oyster farms, community mushroom houses
-            """.trimIndent()
+            8 -> buildEdibleOysterInfo(
+                grade = "CLASS B (Good)",
+                quality = "✅ EDIBLE — GOOD QUALITY",
+                characteristics = characteristics,
+                staticFeatures = "Minor defects, still firm and fresh, slightly smaller",
+                bestUse = "Suitable for cooked dishes, stir-fries, soups, stews"
+            )
 
-            9 -> """
-                🍄 OYSTER MUSHROOM - CLASS C (Fair)
-                ✅ EDIBLE — FAIR/COOK ONLY
-                - Features: Small, thin, slight discoloration
-                - Use: Must be cooked, best in stews, sauces
-                - Habitat: Older flushes, variable cultivation
-            """.trimIndent()
+            9 -> buildEdibleOysterInfo(
+                grade = "CLASS C (Fair)",
+                quality = "✅ EDIBLE — FAIR/COOK ONLY",
+                characteristics = characteristics,
+                staticFeatures = "Small, thin, slight discoloration",
+                bestUse = "Must be cooked, best in stews, sauces"
+            )
 
-            10 -> """
-                🍄 OYSTER MUSHROOM - CLUSTER
-                ✅ EDIBLE — MULTIPLE MUSHROOMS GROUPED
-                - Features: Multiple oyster mushrooms growing together
-                - Best Use: Separate and sort by individual grades, or cook together
-                - Habitat: Natural cluster formation in cultivation
-                - Note: May contain mixed quality mushrooms in one cluster
-            """.trimIndent()
+            10 -> buildEdibleOysterInfo(
+                grade = "CLUSTER",
+                quality = "✅ EDIBLE — MULTIPLE MUSHROOMS GROUPED",
+                characteristics = characteristics,
+                staticFeatures = "Multiple oyster mushrooms growing together",
+                bestUse = "Separate and sort by individual grades, or cook together",
+                note = "May contain mixed quality mushrooms in one cluster"
+            )
 
-            11 -> """
-                🍄 OYSTER MUSHROOM - DEFECTIVE
-                ⚠️ NOT FOR CONSUMPTION
-                - Features: Soft, watery, dark spots or minor spoilage
-                - Culinary: Rejected for human food, possible animal feed use
-                - Safety: Do not use for eating!
-            """.trimIndent()
+            11 -> buildEdibleOysterInfo(
+                grade = "DEFECTIVE",
+                quality = "⚠️ NOT FOR CONSUMPTION",
+                characteristics = characteristics,
+                staticFeatures = "Soft, watery, dark spots or minor spoilage",
+                bestUse = "Rejected for human food, possible animal feed use",
+                safetyNote = "Do not use for eating!"
+            )
 
-            12 -> """
-                🍄 SHIITAKE MUSHROOM (Lentinula edodes)
-                ✅ EDIBLE — MUST BE COOKED
-                - Features: Brown cap, white gills, white stem
-                - Culinary: Grilled, sautéed, soups, tempura
-                - Habitat: Cultivated worldwide, especially Asia
-                - Nutrition: Immunity boost, dietary fiber, vitamin D
-                - Note: Some people sensitive to raw shiitake; always cook well
-            """.trimIndent()
+            12 -> buildMushroomInfo(
+                name = "SHIITAKE MUSHROOM (Lentinula edodes)",
+                safety = "✅ EDIBLE — MUST BE COOKED",
+                characteristics = characteristics,
+                staticFeatures = "Brown cap, white gills, white stem",
+                culinaryUse = "Grilled, sautéed, soups, tempura",
+                habitat = "Cultivated worldwide, especially Asia",
+                nutrition = "Immunity boost, dietary fiber, vitamin D",
+                safetyNote = "Some people sensitive to raw shiitake; always cook well"
+            )
 
             else -> """
                 ❌ UNKNOWN MUSHROOM
                 - This mushroom could not be identified
                 - Never consume unidentified wild mushrooms!
             """.trimIndent()
+        }
+    }
+
+    /**
+     * ✅ NEW: Build mushroom info with dynamic features
+     */
+    private fun buildMushroomInfo(
+        name: String,
+        safety: String,
+        characteristics: MushroomCharacteristics?,
+        staticFeatures: String,
+        habitat: String? = null,
+        toxins: String? = null,
+        symptoms: String? = null,
+        firstAid: String? = null,
+        bestUses: String? = null,
+        nutrition: String? = null,
+        safetyNote: String? = null,
+        culinaryUse: String? = null,
+        medicinalUse: String? = null,
+        use: String? = null,
+        culinaryNote: String? = null
+    ): String {
+        return buildString {
+            append("🍄 $name\n")
+            append("$safety\n\n")
+
+            // ✅ DYNAMIC Features based on actual photo
+            if (characteristics != null) {
+                append("📸 Features (from your photo):\n")
+                append("- Size: ${characteristics.estimatedSize}\n")
+                append("- Colors: ${characteristics.dominantColors.joinToString(", ")}\n")
+                append("- Surface: ${characteristics.surfaceCondition}\n")
+                if (characteristics.visualDefects.isNotEmpty()) {
+                    append("- Notes: ${characteristics.visualDefects.joinToString(", ")}\n")
+                }
+                append("\n")
+                append("📚 Typical Features:\n")
+                append("- $staticFeatures\n\n")
+            } else {
+                append("- Features: $staticFeatures\n\n")
+            }
+
+            habitat?.let { append("- Habitat: $it\n") }
+            toxins?.let { append("- Toxins: $it\n") }
+            symptoms?.let { append("- Symptoms: $it\n") }
+            firstAid?.let { append("- First Aid: $it\n") }
+            bestUses?.let { append("- Best Uses: $it\n") }
+            nutrition?.let { append("- Nutritional Value: $it\n") }
+            safetyNote?.let { append("- Safety: $it\n") }
+            culinaryUse?.let { append("- Culinary Use: $it\n") }
+            medicinalUse?.let { append("- Ethnomedicine: $it\n") }
+            use?.let { append("- Use: $it\n") }
+            culinaryNote?.let { append("- Culinary: $it\n") }
+        }
+    }
+
+    /**
+     * ✅ NEW: Build oyster mushroom info with dynamic features
+     */
+    private fun buildEdibleOysterInfo(
+        grade: String,
+        quality: String,
+        characteristics: MushroomCharacteristics?,
+        staticFeatures: String,
+        bestUse: String,
+        note: String? = null,
+        safetyNote: String? = null
+    ): String {
+        return buildString {
+            append("🍄 OYSTER MUSHROOM - $grade\n")
+            append("$quality\n\n")
+
+            // ✅ DYNAMIC Features based on actual photo
+            if (characteristics != null) {
+                append("📸 Features (from your photo):\n")
+                append("- Size: ${characteristics.estimatedSize}\n")
+                append("- Colors: ${characteristics.dominantColors.joinToString(", ")}\n")
+                append("- Surface: ${characteristics.surfaceCondition}\n")
+                if (characteristics.visualDefects.isNotEmpty()) {
+                    append("- Condition: ${characteristics.visualDefects.joinToString(", ")}\n")
+                }
+                append("\n")
+                append("📚 Typical $grade Features:\n")
+                append("- $staticFeatures\n\n")
+            } else {
+                append("- Features: $staticFeatures\n\n")
+            }
+
+            append("- Use: $bestUse\n")
+            append("- Habitat: Commercial oyster farms, community mushroom houses\n")
+            append("- Nutrition: Rich in protein, B vitamins, antioxidants\n")
+
+            note?.let { append("- Note: $it\n") }
+            safetyNote?.let { append("- Safety: $it\n") }
         }
     }
 

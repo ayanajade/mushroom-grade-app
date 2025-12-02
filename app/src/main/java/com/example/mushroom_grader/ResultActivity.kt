@@ -17,6 +17,7 @@ import com.example.mushroom_grader.ml.ClassificationResult
 import com.example.mushroom_grader.ml.FreshnessAnalyzer
 import com.example.mushroom_grader.ml.MLModelHelper
 import com.example.mushroom_grader.ml.MushroomCategory
+import com.example.mushroom_grader.ml.MushroomCharacteristicsAnalyzer
 import com.example.mushroom_grader.ml.ShelfLifePredictor
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +32,7 @@ import java.util.Locale
  * - Displays safety status (Edible/Poisonous/Inedible)
  * - Shows grading information
  * - ✅ Analyzes actual mushroom freshness from image
+ * - ✅ Analyzes visual characteristics (size, color, surface)
  * - ✅ Storage & shelf life predictions based on visual freshness
  * - Share and save functionality
  */
@@ -39,6 +41,7 @@ class ResultActivity : AppCompatActivity() {
     private lateinit var binding: ActivityResultBinding
     private lateinit var mlModelHelper: MLModelHelper
     private lateinit var freshnessAnalyzer: FreshnessAnalyzer
+    private lateinit var characteristicsAnalyzer: MushroomCharacteristicsAnalyzer
 
     // Classification data
     private var className: String = ""
@@ -49,6 +52,9 @@ class ResultActivity : AppCompatActivity() {
     private var grade: String? = null
     private var imagePath: String? = null
     private var imageBitmap: Bitmap? = null
+
+    // ✅ NEW: Store characteristics for "More Info" dialog
+    private var currentCharacteristics: com.example.mushroom_grader.ml.MushroomCharacteristics? = null
 
     companion object {
         private const val TAG = "ResultActivity"
@@ -61,7 +67,7 @@ class ResultActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setupToolbar()
-        initializeMLModel()
+        initializeAnalyzers()
         loadDataAndDisplay()
     }
 
@@ -77,12 +83,13 @@ class ResultActivity : AppCompatActivity() {
     }
 
     /**
-     * Initialize ML Model Helper and Freshness Analyzer
+     * ✅ UPDATED: Initialize ML Model Helper and analyzers
      */
-    private fun initializeMLModel() {
+    private fun initializeAnalyzers() {
         mlModelHelper = MLModelHelper(this)
         freshnessAnalyzer = FreshnessAnalyzer()
-        Log.d(TAG, "✅ ML Model and Freshness Analyzer initialized")
+        characteristicsAnalyzer = MushroomCharacteristicsAnalyzer()
+        Log.d(TAG, "✅ ML Model and Analyzers initialized")
     }
 
     /**
@@ -225,8 +232,7 @@ class ResultActivity : AppCompatActivity() {
     }
 
     /**
-     * ✅ Display storage predictions with FRESHNESS ANALYSIS
-     * Analyzes the actual mushroom image to determine current condition
+     * ✅ UPDATED: Display storage predictions with FRESHNESS & CHARACTERISTICS ANALYSIS
      */
     private fun displayStoragePredictions() {
         // Only show for edible mushrooms
@@ -239,25 +245,37 @@ class ResultActivity : AppCompatActivity() {
         try {
             binding.cardStoragePredictions.visibility = View.VISIBLE
 
-            // ✅ Analyze actual mushroom freshness from image
+            // ✅ Analyze actual mushroom freshness and characteristics from image
             lifecycleScope.launch {
-                val freshnessResult = withContext(Dispatchers.Default) {
+                val analysisResults = withContext(Dispatchers.Default) {
                     imageBitmap?.let { bitmap ->
-                        Log.d(TAG, "🔍 Starting freshness analysis...")
-                        freshnessAnalyzer.analyzeFreshness(bitmap, className)
+                        Log.d(TAG, "🔍 Starting freshness and characteristics analysis...")
+
+                        // Freshness analysis
+                        val freshnessResult = freshnessAnalyzer.analyzeFreshness(bitmap, className)
+
+                        // ✅ NEW: Characteristics analysis
+                        val characteristics = characteristicsAnalyzer.analyzeCharacteristics(bitmap, className, grade)
+
+                        Pair(freshnessResult, characteristics)
                     }
                 }
 
-                if (freshnessResult != null) {
-                    Log.d(TAG, "✅ Freshness analysis complete:")
-                    Log.d(TAG, "  Score: ${freshnessResult.freshnessScore}%")
-                    Log.d(TAG, "  Status: ${freshnessResult.status}")
-                    Log.d(TAG, "  Multiplier: ${freshnessResult.shelfLifeMultiplier}x")
+                if (analysisResults != null) {
+                    val (freshnessResult, characteristics) = analysisResults
+
+                    Log.d(TAG, "✅ Analysis complete:")
+                    Log.d(TAG, "  Freshness Score: ${freshnessResult.freshnessScore}%")
+                    Log.d(TAG, "  Size: ${characteristics.estimatedSize}")
+                    Log.d(TAG, "  Colors: ${characteristics.dominantColors}")
 
                     // ✅ Display freshness status card
                     displayFreshnessCard(freshnessResult)
 
-                    // ✅ Get predictions with freshness multiplier
+                    // ✅ NEW: Update detailed info with accurate description
+                    displayAccurateDescription(characteristics)
+
+                    // Get predictions with freshness multiplier
                     val predictions = ShelfLifePredictor.getAllStoragePredictions(
                         className,
                         freshnessResult.shelfLifeMultiplier
@@ -269,8 +287,7 @@ class ResultActivity : AppCompatActivity() {
                         addStorageRow(prediction)
                     }
                 } else {
-                    Log.w(TAG, "⚠️ Could not analyze freshness, using default")
-                    // Fallback to default predictions
+                    Log.w(TAG, "⚠️ Could not analyze, using default")
                     binding.cardFreshness.visibility = View.GONE
                     val predictions = ShelfLifePredictor.getAllStoragePredictions(className)
                     binding.layoutStorageRows.removeAllViews()
@@ -288,7 +305,7 @@ class ResultActivity : AppCompatActivity() {
     }
 
     /**
-     * ✅ UPDATED: Display freshness analysis in dedicated card (Dynamic with proper formatting)
+     * ✅ Display freshness analysis in dedicated card (Dynamic with proper formatting)
      */
     private fun displayFreshnessCard(freshnessResult: com.example.mushroom_grader.ml.FreshnessAnalysisResult) {
         // Show freshness card
@@ -336,7 +353,7 @@ class ResultActivity : AppCompatActivity() {
             showFreshnessDetailsDialog(freshnessResult)
         }
 
-        // ✅ FIXED: Update storage title dynamically with proper string formatting
+        // ✅ Update storage title dynamically with proper string formatting
         val dynamicTitle = buildString {
             append(getString(R.string.shelf_life_by_storage))
             append("\n")
@@ -374,6 +391,29 @@ class ResultActivity : AppCompatActivity() {
             .setMessage(message)
             .setPositiveButton(R.string.ok, null)
             .show()
+    }
+
+    /**
+     * ✅ NEW: Display accurate description based on actual image characteristics
+     */
+    private fun displayAccurateDescription(characteristics: com.example.mushroom_grader.ml.MushroomCharacteristics) {
+        // Save for later use in "More Info" dialog
+        currentCharacteristics = characteristics
+
+        // Update the detailed info card with accurate, image-based description
+        binding.tvDetailedInfo.text = buildString {
+            append(characteristics.description)
+            append("\n\n")
+            append("📏 Size: ${characteristics.estimatedSize}\n")
+            append("🎨 Colors: ${characteristics.dominantColors.joinToString(", ")}\n")
+            append("✨ Surface: ${characteristics.surfaceCondition}")
+
+            if (characteristics.visualDefects.isNotEmpty()) {
+                append("\n⚠️ Notes: ${characteristics.visualDefects.joinToString(", ")}")
+            }
+        }
+
+        Log.d(TAG, "✅ Accurate description displayed")
     }
 
     /**
@@ -597,10 +637,10 @@ class ResultActivity : AppCompatActivity() {
     }
 
     /**
-     * Show detailed mushroom information dialog
+     * ✅ UPDATED: Show detailed mushroom information dialog with actual photo characteristics
      */
     private fun showMoreInfoDialog() {
-        val message = mlModelHelper.getMushroomInfo(classId)
+        val message = mlModelHelper.getMushroomInfo(classId, currentCharacteristics)
 
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.detailed_information)
