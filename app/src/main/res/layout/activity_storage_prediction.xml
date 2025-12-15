@@ -5,18 +5,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="#F5F5F5">
 
-    <!-- AppBar -->
+    <!-- Updated AppBar with purple gradient toolbar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
+            android:background="@drawable/toolbar_gradient_background"
+            app:titleTextColor="@android:color/white"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -33,48 +35,77 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Mushroom Info Card -->
+            <!-- Enhanced Mushroom Info Card with icon -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@android:color/white">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:gravity="center_vertical"
+                    android:baselineAligned="false">
 
-                    <TextView
-                        android:id="@+id/textMushroomName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        tools:text="Oyster Mushroom - Class A" />
+                    <!-- Icon Container -->
+                    <FrameLayout
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/icon_background_green">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_check_circle"
+                            app:tint="@android:color/white"
+                            android:contentDescription="@null" />
+
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="@string/storage_predictions_subtitle"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_secondary" />
+                        android:layout_weight="1"
+                        android:layout_marginStart="16dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/textMushroomName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="#424242"
+                            tools:text="Oyster Mushroom - Class A" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="@string/storage_predictions_subtitle"
+                            android:textSize="14sp"
+                            android:textColor="#757575" />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Storage Methods Selection Card -->
+            <!-- Enhanced Storage Methods Selection Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@android:color/white">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -82,14 +113,39 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/select_storage_method"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="8dp" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp"
+                        android:baselineAligned="false">
+
+                        <FrameLayout
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/icon_background_purple">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_storage"
+                                app:tint="@android:color/white"
+                                android:contentDescription="@null" />
+
+                        </FrameLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="@string/select_storage_method"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#424242" />
+
+                    </LinearLayout>
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rvStorageMethods"
@@ -102,13 +158,14 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Selected Storage Method Details Card -->
+            <!-- Enhanced Selected Storage Method Details Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@android:color/white">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -116,31 +173,64 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <!-- Storage Method Name -->
-                    <TextView
-                        android:id="@+id/textStorageMethod"
-                        android:layout_width="wrap_content"
+                    <!-- Storage Method Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        tools:text="Vacuum Sealed" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:baselineAligned="false">
 
-                    <TextView
-                        android:id="@+id/textStorageDescription"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_secondary"
-                        tools:text="Removes air, prevents oxidation and bacterial growth" />
+                        <FrameLayout
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/icon_background_blue">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_info"
+                                app:tint="@android:color/white"
+                                android:contentDescription="@null" />
+
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/textStorageMethod"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:textColor="#424242"
+                                tools:text="Vacuum Sealed" />
+
+                            <TextView
+                                android:id="@+id/textStorageDescription"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textSize="13sp"
+                                android:textColor="#757575"
+                                tools:text="Removes air, prevents oxidation and bacterial growth" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="12dp"
-                        android:background="@color/divider" />
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="16dp"
+                        android:background="#E0E0E0" />
 
                     <!-- Shelf Life Display -->
                     <LinearLayout
@@ -150,33 +240,38 @@
                         android:gravity="center_vertical"
                         android:baselineAligned="false">
 
+                        <!-- Days Counter -->
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="12dp"
+                            android:background="@drawable/shelf_life_background">
 
                             <TextView
                                 android:id="@+id/textShelfLifeDays"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="48sp"
+                                android:textSize="42sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/green_600"
+                                android:textColor="#43A047"
                                 tools:text="12" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/days_suffix"
-                                android:textSize="16sp"
-                                android:textColor="@color/text_secondary" />
+                                android:textSize="14sp"
+                                android:textColor="#757575" />
 
                         </LinearLayout>
 
                         <LinearLayout
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="16dp"
                             android:orientation="vertical"
                             android:gravity="end">
 
@@ -185,28 +280,48 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textSize="14sp"
-                                android:textColor="@color/text_primary"
+                                android:textStyle="bold"
+                                android:textColor="#424242"
                                 tools:text="Expires: December 10, 2025" />
 
-                            <TextView
-                                android:id="@+id/textTemperature"
+                            <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:textSize="14sp"
-                                android:textColor="@color/text_secondary"
-                                tools:text="🌡️ Store at: 2-4°C" />
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginTop="6dp">
 
-                            <!-- NEW: Freshness Status Display -->
+                                <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:src="@drawable/ic_thermometer"
+                                    app:tint="#757575"
+                                    android:contentDescription="@null" />
+
+                                <TextView
+                                    android:id="@+id/textTemperature"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="4dp"
+                                    android:textSize="13sp"
+                                    android:textColor="#757575"
+                                    tools:text="Store at: 2-4°C" />
+
+                            </LinearLayout>
+
+                            <!-- Freshness Status Badge -->
                             <TextView
                                 android:id="@+id/textFreshnessStatus"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
-                                android:textSize="14sp"
+                                android:paddingHorizontal="12dp"
+                                android:paddingVertical="4dp"
+                                android:background="@drawable/badge_safe"
+                                android:textSize="12sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/green_600"
-                                tools:text="🟢 Fresh - Safe to consume" />
+                                android:textColor="@android:color/white"
+                                tools:text="Fresh - Safe to consume" />
 
                         </LinearLayout>
 
@@ -216,13 +331,14 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Storage Tips Card -->
+            <!-- Enhanced Storage Tips Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@android:color/white">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -230,36 +346,63 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/storage_tips"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="8dp" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp"
+                        android:baselineAligned="false">
+
+                        <FrameLayout
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/icon_background_green">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_lightbulb"
+                                app:tint="@android:color/white"
+                                android:contentDescription="@null" />
+
+                        </FrameLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="@string/storage_tips"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#424242" />
+
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/textStorageTips"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textSize="14sp"
-                        android:textColor="@color/text_secondary"
-                        android:lineSpacingExtra="4dp"
+                        android:textColor="#757575"
+                        android:lineSpacingExtra="6dp"
                         tools:text="• Keep sealed until ready to use\n• Check seal integrity regularly\n• Store away from direct sunlight" />
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Warnings Card -->
+            <!-- Enhanced Warnings Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
-                app:cardBackgroundColor="@color/warning_background">
+                app:cardBackgroundColor="#FFF8E1"
+                app:strokeColor="#FFB300"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -267,23 +410,48 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/warnings"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/warning_text"
-                        android:layout_marginBottom="8dp" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp"
+                        android:baselineAligned="false">
+
+                        <FrameLayout
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/icon_background_orange">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_warning"
+                                app:tint="@android:color/white"
+                                android:contentDescription="@null" />
+
+                        </FrameLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:text="@string/warnings"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#E65100" />
+
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/textWarnings"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textSize="14sp"
-                        android:textColor="@color/text_primary"
-                        android:lineSpacingExtra="4dp"
-                        tools:text="⚠️ Discard if seal is broken\n⚠️ Do not consume if any signs of spoilage" />
+                        android:textColor="#424242"
+                        android:lineSpacingExtra="6dp"
+                        tools:text="• Discard if seal is broken\n• Do not consume if any signs of spoilage" />
 
                 </LinearLayout>
 

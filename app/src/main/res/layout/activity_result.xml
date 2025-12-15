@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F5F5F5"
     android:fillViewport="true">
 
     <LinearLayout
@@ -11,15 +12,16 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Toolbar -->
+        <!-- Purple gradient toolbar to match other screens -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
+            android:background="@drawable/toolbar_gradient_background"
             android:elevation="4dp"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            app:titleTextColor="@android:color/white" />
 
         <!-- Main Content -->
         <LinearLayout
@@ -28,120 +30,213 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Mushroom Image -->
+            <!-- Enhanced mushroom image card with 16dp corner radius -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="4dp">
 
-                <ImageView
-                    android:id="@+id/ivMushroom"
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="300dp"
-                    android:contentDescription="@string/mushroom_image"
-                    android:scaleType="centerCrop"
-                    tools:src="@drawable/ic_launcher_foreground" />
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/ivMushroom"
+                        android:layout_width="match_parent"
+                        android:layout_height="280dp"
+                        android:contentDescription="@string/mushroom_image"
+                        android:scaleType="centerCrop"
+                        tools:src="@drawable/ic_launcher_foreground" />
+
+                    <!-- Overlay gradient for better text readability -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_gravity="bottom"
+                        android:background="@drawable/image_bottom_gradient" />
+
+                    <!-- Confidence badge overlay on image -->
+                    <TextView
+                        android:id="@+id/tvConfidenceBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top|end"
+                        android:layout_margin="12dp"
+                        android:background="@drawable/confidence_badge_background"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:textColor="@android:color/white"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        tools:text="95.2%" />
+                </FrameLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Mushroom Name -->
-            <TextView
-                android:id="@+id/tvMushroomName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:textAlignment="center"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                tools:text="Oyster Mushroom - Class A" />
-
-            <!-- Confidence -->
-            <TextView
-                android:id="@+id/tvConfidence"
+            <!-- Redesigned name and confidence section -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:textAlignment="center"
-                android:textSize="16sp"
-                tools:text="Confidence: 95.2%" />
+                android:gravity="center"
+                android:orientation="vertical">
 
-            <!-- Safety Status Card -->
+                <TextView
+                    android:id="@+id/tvConfidence"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textAlignment="center"
+                    android:textColor="#757575"
+                    android:textSize="15sp"
+                    tools:text="Accuracy: 95.2%" />
+
+                <TextView
+                    android:id="@+id/tvMushroomName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    android:textColor="#424242"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    tools:text="Oyster Mushroom" />
+
+            </LinearLayout>
+
+            <!-- Enhanced Safety Status Card with icon -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardSafety"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="8dp"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
+                    android:baselineAligned="false"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
                     android:padding="16dp">
 
-                    <TextView
-                        android:id="@+id/tvSafetyTitle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        tools:text="✅ Safe to Eat" />
+                    <!-- Safety Icon Container -->
+                    <FrameLayout
+                        android:id="@+id/safetyIconContainer"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/icon_background_green">
 
-                    <TextView
-                        android:id="@+id/tvSafetyMessage"
-                        android:layout_width="match_parent"
+                        <ImageView
+                            android:id="@+id/ivSafetyIcon"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/safety_status"
+                            android:src="@drawable/ic_check_circle"
+                            app:tint="@android:color/white" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:textSize="14sp"
-                        tools:text="This mushroom is edible and safe for consumption." />
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvSafetyTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="#424242"
+                            android:textSize="17sp"
+                            android:textStyle="bold"
+                            tools:text="Safe to Eat" />
+
+                        <TextView
+                            android:id="@+id/tvSafetyMessage"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:textColor="#757575"
+                            android:textSize="14sp"
+                            tools:text="This mushroom is edible and safe for consumption." />
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Grade Card -->
+            <!-- Enhanced Grade Card with large grade display -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardGrade"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="12dp"
                 android:visibility="gone"
-                app:cardCornerRadius="8dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
                 tools:visibility="visible">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
+                    android:baselineAligned="false"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
                     android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/grade_label"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
+                    <!-- Grade Badge -->
+                    <FrameLayout
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:background="@drawable/grade_badge_background">
 
-                    <TextView
-                        android:id="@+id/tvGradeValue"
-                        android:layout_width="match_parent"
+                        <TextView
+                            android:id="@+id/tvGradeBadge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:textColor="@android:color/white"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            tools:text="A" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        tools:text="Class A" />
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/grade_label"
+                            android:textColor="#757575"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/tvGradeValue"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:textColor="#424242"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            tools:text="Class A - Premium Quality" />
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ✅ Freshness Analysis Card -->
+            <!-- Enhanced Freshness Analysis Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardFreshness"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="12dp"
                 android:visibility="gone"
-                app:cardCornerRadius="8dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
                 tools:visibility="visible">
 
@@ -151,20 +246,46 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/freshness_analysis"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/colorPrimary" />
-
+                    <!-- Header with icon -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:orientation="horizontal"
-                        android:baselineAligned="false">
+                        android:baselineAligned="false"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <FrameLayout
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="@drawable/icon_background_blue">
+
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:layout_gravity="center"
+                                android:contentDescription="@string/freshness_analysis"
+                                android:src="@drawable/ic_freshness"
+                                app:tint="@android:color/white" />
+                        </FrameLayout>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:text="@string/freshness_analysis"
+                            android:textColor="#424242"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <!-- Score and Status Row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -176,14 +297,16 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/freshness_score_label"
-                                android:textSize="12sp"
-                                android:textColor="?android:attr/textColorSecondary" />
+                                android:textColor="#9E9E9E"
+                                android:textSize="12sp" />
 
                             <TextView
                                 android:id="@+id/tvFreshnessScore"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="24sp"
+                                android:layout_marginTop="2dp"
+                                android:textColor="#43A047"
+                                android:textSize="28sp"
                                 android:textStyle="bold"
                                 tools:text="85%" />
                         </LinearLayout>
@@ -198,13 +321,15 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/status_label"
-                                android:textSize="12sp"
-                                android:textColor="?android:attr/textColorSecondary" />
+                                android:textColor="#9E9E9E"
+                                android:textSize="12sp" />
 
                             <TextView
                                 android:id="@+id/tvFreshnessStatus"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textColor="#424242"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
                                 tools:text="Good - Fresh" />
@@ -217,8 +342,9 @@
                         style="?android:attr/progressBarStyleHorizontal"
                         android:layout_width="match_parent"
                         android:layout_height="8dp"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="16dp"
                         android:max="100"
+                        android:progressDrawable="@drawable/freshness_progress_drawable"
                         tools:progress="85" />
 
                     <!-- View Details Button -->
@@ -227,20 +353,22 @@
                         style="@style/Widget.MaterialComponents.Button.TextButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="end"
                         android:layout_marginTop="8dp"
                         android:text="@string/view_detailed_analysis"
-                        android:textSize="12sp" />
+                        android:textColor="#7B1FA2"
+                        android:textSize="13sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Storage Predictions Card -->
+            <!-- Enhanced Storage Predictions Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardStoragePredictions"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="12dp"
                 android:visibility="gone"
-                app:cardCornerRadius="8dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
                 tools:visibility="visible">
 
@@ -250,48 +378,85 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
-                        android:id="@+id/tvStoragePredictionsTitle"
+                    <!-- Header with icon -->
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/shelf_life_by_storage"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/colorPrimary" />
+                        android:baselineAligned="false"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="@string/calculated_based_on_condition"
-                        android:textSize="12sp"
-                        android:textColor="?android:attr/textColorSecondary" />
+                        <FrameLayout
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="@drawable/icon_background_orange">
 
-                    <!-- Storage method rows will be added here dynamically -->
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:layout_gravity="center"
+                                android:contentDescription="@string/shelf_life_by_storage"
+                                android:src="@drawable/ic_storage"
+                                app:tint="@android:color/white" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvStoragePredictionsTitle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/shelf_life_by_storage"
+                                android:textColor="#424242"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="@string/calculated_based_on_condition"
+                                android:textColor="#9E9E9E"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Storage method rows -->
                     <LinearLayout
                         android:id="@+id/layoutStorageRows"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="16dp"
                         android:orientation="vertical" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Category -->
+            <!-- Category Badge -->
             <TextView
                 android:id="@+id/tvCategory"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:textSize="14sp"
-                tools:text="Category: EDIBLE" />
+                android:layout_gravity="center"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/category_badge_background"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
+                android:textColor="#7B1FA2"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                tools:text="EDIBLE" />
 
-            <!-- Detailed Info Card -->
+            <!-- Enhanced Detailed Info Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="8dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="4dp">
 
                 <LinearLayout
@@ -300,75 +465,129 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
+                    <!-- Header with icon -->
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/detailed_information_title"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/colorPrimary" />
+                        android:baselineAligned="false"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <FrameLayout
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:background="@drawable/icon_background_purple">
+
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:layout_gravity="center"
+                                android:contentDescription="@string/detailed_information_title"
+                                android:src="@drawable/ic_info"
+                                app:tint="@android:color/white" />
+                        </FrameLayout>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:text="@string/detailed_information_title"
+                            android:textColor="#424242"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/tvDetailedInfo"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="12dp"
+                        android:lineSpacingExtra="4dp"
+                        android:textColor="#616161"
                         android:textSize="14sp"
                         tools:text="Detailed mushroom information..." />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Action Buttons -->
-            <LinearLayout
+            <!-- Redesigned Action Buttons -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnShare"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="@string/share_result"
-                    app:icon="@android:drawable/ic_menu_share" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnMoreInfo"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="@string/more_information" />
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnTakeAnother"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/take_another" />
+                        android:id="@+id/btnShare"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:backgroundTint="#7B1FA2"
+                        android:text="@string/share_result"
+                        android:textColor="@android:color/white"
+                        android:textSize="15sp"
+                        app:cornerRadius="12dp"
+                        app:icon="@android:drawable/ic_menu_share"
+                        app:iconGravity="textStart"
+                        app:iconTint="@android:color/white" />
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnViewHistory"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="0dp"
+                        android:id="@+id/btnMoreInfo"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/more_information"
+                        android:textColor="#7B1FA2"
+                        android:textSize="15sp"
+                        app:cornerRadius="12dp"
+                        app:strokeColor="#7B1FA2"
+                        app:strokeWidth="1.5dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/view_history" />
+                        android:layout_marginTop="12dp"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnTakeAnother"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/take_another"
+                            android:textColor="#7B1FA2"
+                            android:textSize="13sp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnViewHistory"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/view_history"
+                            android:textColor="#7B1FA2"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnBackHome"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/back_to_home"
+                        android:textColor="#757575"
+                        android:textSize="13sp" />
                 </LinearLayout>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnBackHome"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/back_to_home" />
-            </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

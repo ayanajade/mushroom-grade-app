@@ -8,7 +8,9 @@ import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.mushroom_grader.database.AppDatabase
@@ -380,8 +382,6 @@ class ResultActivity : AppCompatActivity() {
             append(getString(R.string.spotting_format, freshnessResult.spotScore))
             append("\n")
             append(getString(R.string.texture_quality_format, freshnessResult.textureScore))
-            append("\n")
-            append(getString(R.string.moisture_level_format, freshnessResult.moistureScore))
             append("\n\n")
             append(getString(R.string.freshness_affects_shelf_life))
         }
@@ -613,6 +613,7 @@ class ResultActivity : AppCompatActivity() {
     /**
      * Navigate to CameraActivity for new classification
      */
+    @OptIn(ExperimentalCamera2Interop::class)
     private fun navigateToCameraActivity() {
         startActivity(Intent(this, CameraActivity::class.java))
         finish()
@@ -653,44 +654,44 @@ class ResultActivity : AppCompatActivity() {
      * Save classification result to database
      */
     private fun saveToDatabase() {
-        Log.d(TAG, "💾 saveToDatabase() called")
-
+        Log.d(TAG, "saveToDatabase called")
         lifecycleScope.launch {
             try {
-                Log.d(TAG, "📦 Creating ClassificationResult object...")
-
+                Log.d(TAG, "Creating ClassificationResult object...")
                 withContext(Dispatchers.IO) {
                     val result = ClassificationResult(
                         className = className,
                         classId = classId,
                         confidence = confidence,
                         isPoisonous = isPoisonous,
-                        category = MushroomCategory.valueOf(category),
+                        category = try {
+                            MushroomCategory.valueOf(category)
+                        } catch (e: Exception) {
+                            MushroomCategory.UNKNOWN
+                        },
                         grade = grade,
                         imagePath = imagePath
                     )
-
-                    Log.d(TAG, "📦 Result object created: $className")
+                    Log.d(TAG, "Result object created: $className")
 
                     val database = AppDatabase.getDatabase(applicationContext)
-                    Log.d(TAG, "✅ Database instance obtained")
+                    Log.d(TAG, "Database instance obtained")
 
                     val rowId = database.resultDao().insertResult(result)
                     Log.d(TAG, "✅ SAVED to database! Row ID: $rowId")
-                }
 
-                // Show success toast
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(
-                        this@ResultActivity,
-                        R.string.saved_to_history,
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    // Show success toast
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@ResultActivity,
+                            R.string.saved_to_history,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
-
             } catch (ex: Exception) {
                 Log.e(TAG, "❌ FAILED to save to database!", ex)
-                Log.e(TAG, "❌ Error: ${ex.message}")
+                Log.e(TAG, "Error: ${ex.message}")
 
                 // Show error toast
                 withContext(Dispatchers.Main) {

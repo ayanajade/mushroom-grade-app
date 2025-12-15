@@ -3,17 +3,16 @@ package com.example.mushroom_grader.database
 import androidx.room.TypeConverter
 import com.example.mushroom_grader.ml.MushroomCategory
 
-class Converters {
-
+object Converters {
     @TypeConverter
     fun fromMushroomCategory(category: MushroomCategory): String {
         return category.name
     }
 
     @TypeConverter
-    fun toMushroomCategory(value: String): MushroomCategory {
+    fun toMushroomCategory(categoryName: String): MushroomCategory {
         return try {
-            MushroomCategory.valueOf(value)
+            MushroomCategory.valueOf(categoryName)
         } catch (e: IllegalArgumentException) {
             MushroomCategory.UNKNOWN
         }

@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
 import com.example.mushroom_grader.ml.ClassificationResult
 
 @Database(
@@ -12,9 +11,7 @@ import com.example.mushroom_grader.ml.ClassificationResult
     version = 1,
     exportSchema = false
 )
-@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
-
     abstract fun resultDao(): ResultDao
 
     companion object {
@@ -28,7 +25,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "mushroom_grader_database"
                 )
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration(dropAllTables = true)  // ✅ Added parameter
                     .build()
                 INSTANCE = instance
                 instance

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background - camera viewfinder -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#212121" />
+        </shape>
+    </item>
+
+    <!-- Mushroom (centered) -->
+    <item
+        android:width="80dp"
+        android:height="50dp"
+        android:gravity="center">
+        <shape android:shape="oval">
+            <solid android:color="#D2691E" />
+        </shape>
+    </item>
+
+    <item
+        android:width="50dp"
+        android:height="50dp"
+        android:gravity="center"
+        android:top="20dp">
+        <shape android:shape="oval">
+            <solid android:color="#8B4513" />
+        </shape>
+    </item>
+
+    <!-- Focus frame outer -->
+    <item
+        android:width="120dp"
+        android:height="120dp"
+        android:gravity="center">
+        <shape android:shape="rectangle">
+            <stroke android:width="3dp" android:color="#4CAF50" />
+            <solid android:color="#00000000" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+
+    <!-- Focus corners - top left -->
+    <item
+        android:width="20dp"
+        android:height="3dp"
+        android:gravity="center"
+        android:left="-50dp"
+        android:top="-58dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#4CAF50" />
+        </shape>
+    </item>
+
+    <item
+        android:width="3dp"
+        android:height="20dp"
+        android:gravity="center"
+        android:left="-58dp"
+        android:top="-50dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#4CAF50" />
+        </shape>
+    </item>
+
+    <!-- Focus corners - top right -->
+    <item
+        android:width="20dp"
+        android:height="3dp"
+        android:gravity="center"
+        android:left="50dp"
+        android:top="-58dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#4CAF50" />
+        </shape>
+    </item>
+
+    <item
+        android:width="3dp"
+        android:height="20dp"
+        android:gravity="center"
+        android:left="58dp"
+        android:top="-50dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#4CAF50" />
+        </shape>
+    </item>
+
+    <!-- Focus corners - bottom left -->
+    <item
+        android:width="20dp"
+        android:height="3dp"
+        android:gravity="center"
+        android:left="-50dp"
+        android:top="58dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#4CAF50" />
+        </shape>
+    </item>
+
+    <item
+        android:width="3dp"
+        android:height="20dp"
+        android:gravity="center"
+        android:left="-58dp"
+        android:top="50dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#4CAF50" />
+        </shape>
+    </item>
+
+    <!-- Focus corners - bottom right -->
+    <item
+        android:width="20dp"
+        android:height="3dp"
+        android:gravity="center"
+        android:left="50dp"
+        android:top="58dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#4CAF50" />
+        </shape>
+    </item>
+
+    <item
+        android:width="3dp"
+        android:height="20dp"
+        android:gravity="center"
+        android:left="58dp"
+        android:top="50dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#4CAF50" />
+        </shape>
+    </item>
+</layer-list>

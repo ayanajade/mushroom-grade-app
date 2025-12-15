@@ -11,13 +11,13 @@ class ShelfLifePredictor {
         // Base shelf life in days for refrigerated open storage
         // These are for FRESH mushrooms at optimal condition (100% freshness)
         private val BASE_SHELF_LIFE = mapOf(
-            "Button Mushroom" to 7,
+            "Button Mushroom" to 5,
             "Oyster - Class A" to 5,
             "Oyster - Class B" to 4,
             "Oyster - Class C" to 3,
             "Oyster - Cluster" to 4,
             "Oyster - Defective" to 1,
-            "Shiitake Mushroom" to 10
+            "Shiitake Mushroom" to 7
         )
 
         /**
@@ -85,13 +85,14 @@ class ShelfLifePredictor {
 
         private fun getRecommendedTemperature(method: StorageMethod): String {
             return when (method) {
-                StorageMethod.VACUUM_SEALED -> "2-4°C (35-39°F)"
-                StorageMethod.REFRIGERATED_SEALED -> "2-4°C (35-39°F)"
-                StorageMethod.REFRIGERATED_OPEN -> "2-4°C (35-39°F)"
-                StorageMethod.ROOM_TEMPERATURE -> "18-22°C (64-72°F)"
-                StorageMethod.FROZEN -> "-18°C (0°F) or below"
+                StorageMethod.VACUUM_SEALED -> "34-38°F (1-3°C)"        // ✅ Standardized
+                StorageMethod.REFRIGERATED_SEALED -> "34-38°F (1-3°C)"
+                StorageMethod.REFRIGERATED_OPEN -> "34-38°F (1-3°C)"
+                StorageMethod.ROOM_TEMPERATURE -> "68-72°F (20-22°C)"
+
             }
         }
+
 
         /**
          * ✅ UPDATED: Storage tips now consider freshness level
@@ -151,13 +152,6 @@ class ShelfLifePredictor {
                     commonTips.add("Use within 6-8 hours")
                 }
 
-                StorageMethod.FROZEN -> {
-                    commonTips.add("Clean and slice before freezing")
-                    commonTips.add("Blanch for 1-2 minutes (optional but recommended)")
-                    commonTips.add("Use freezer-safe bags or containers")
-                    commonTips.add("Label with date and mushroom type")
-                    commonTips.add("Thaw in refrigerator, not at room temperature")
-                }
             }
 
             // Mushroom-specific tips
@@ -222,10 +216,6 @@ class ShelfLifePredictor {
                     warnings.add("🚨 Use immediately or refrigerate")
                 }
 
-                StorageMethod.FROZEN -> {
-                    warnings.add("⚠️ Texture may become softer after thawing")
-                    warnings.add("⚠️ Best used in cooked dishes after freezing")
-                }
 
                 else -> {
                     if (freshnessMultiplier >= 0.7f) {

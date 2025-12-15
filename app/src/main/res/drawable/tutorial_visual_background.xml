@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- White surface/table -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#FFFFFF" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+
+    <!-- Mushroom on surface -->
+    <item
+        android:width="80dp"
+        android:height="80dp"
+        android:gravity="center">
+        <shape android:shape="oval">
+            <solid android:color="#8B4513" />
+        </shape>
+    </item>
+
+    <!-- Mushroom cap -->
+    <item
+        android:width="100dp"
+        android:height="60dp"
+        android:gravity="center|top"
+        android:top="20dp">
+        <shape android:shape="oval">
+            <solid android:color="#D2691E" />
+        </shape>
+    </item>
+</layer-list>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background - camera viewfinder -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#263238" />
+        </shape>
+    </item>
+
+    <!-- Guide frame -->
+    <item
+        android:width="140dp"
+        android:height="140dp"
+        android:gravity="center">
+        <shape android:shape="rectangle">
+            <stroke android:width="2dp" android:color="#FFFFFF" android:dashWidth="8dp" android:dashGap="4dp" />
+            <solid android:color="#00000000" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+
+    <!-- Mushroom cap (centered, proper size) -->
+    <item
+        android:width="100dp"
+        android:height="60dp"
+        android:gravity="center"
+        android:top="-10dp">
+        <shape android:shape="oval">
+            <solid android:color="#D2691E" />
+        </shape>
+    </item>
+
+    <!-- Mushroom stem -->
+    <item
+        android:width="40dp"
+        android:height="50dp"
+        android:gravity="center"
+        android:top="30dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#F5DEB3" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+
+    <!-- Checkmark (correct framing) -->
+    <item
+        android:width="30dp"
+        android:height="30dp"
+        android:gravity="top|end"
+        android:top="10dp"
+        android:right="10dp">
+        <shape android:shape="oval">
+            <solid android:color="#4CAF50" />
+        </shape>
+    </item>
+</layer-list>

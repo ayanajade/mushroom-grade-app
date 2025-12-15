@@ -16,19 +16,17 @@ enum class StorageMethod(val displayName: String, val description: String) {
     ROOM_TEMPERATURE(
         "Room Temperature",
         "Not recommended for long storage"
-    ),
-    FROZEN(
-        "Frozen (-18°C)",
-        "Best for long-term storage, may affect texture"
     );
 
+    // ✅ CALIBRATED: Research-based multipliers
     fun getShelfLifeMultiplier(): Float {
         return when (this) {
-            VACUUM_SEALED -> 2.5f
-            REFRIGERATED_SEALED -> 1.8f
-            REFRIGERATED_OPEN -> 1.0f
-            ROOM_TEMPERATURE -> 0.3f
-            FROZEN -> 10.0f
+            VACUUM_SEALED -> 3.6f        // ✅ 5→18 days
+            REFRIGERATED_SEALED -> 1.6f  // ✅ 5→8 days
+            REFRIGERATED_OPEN -> 1.0f    // ✓ Baseline
+            ROOM_TEMPERATURE -> 0.4f     // ✅ 5→2 days
+
         }
     }
+
 }

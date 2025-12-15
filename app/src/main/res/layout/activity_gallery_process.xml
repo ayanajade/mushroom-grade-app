@@ -5,69 +5,163 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F5F5F5"
     tools:context=".GalleryProcessActivity">
 
-    <!-- App Bar -->
+    <!-- Purple gradient toolbar for uniformity -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
+        android:background="@drawable/toolbar_gradient_background"
         app:navigationIcon="@drawable/ic_close"
+        app:navigationIconTint="@android:color/white"
         app:title="@string/processing_image"
-        app:titleTextColor="?attr/colorOnPrimary"
+        app:titleTextColor="@android:color/white"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Image Preview -->
-    <ImageView
-        android:id="@+id/ivPreview"
+    <!-- Image Preview inside a styled card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/imageCard"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:scaleType="centerCrop"
-        android:contentDescription="@string/selected_mushroom_image"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintBottom_toTopOf="@id/processingCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/ivPreview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="@string/selected_mushroom_image"
+                tools:src="@mipmap/ic_launcher" />
+
+            <!-- Processing Overlay -->
+            <View
+                android:id="@+id/processingOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#99000000" />
+
+            <!-- Scanning animation frame -->
+            <View
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_gravity="center"
+                android:background="@drawable/guide_frame_border" />
+
+            <!-- Corner accents -->
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="-80dp"
+                android:layout_marginTop="-80dp"
+                android:src="@drawable/corner_top_left"
+                android:contentDescription="@null" />
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="80dp"
+                android:layout_marginTop="-80dp"
+                android:src="@drawable/corner_top_right"
+                android:contentDescription="@null" />
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="-80dp"
+                android:layout_marginTop="80dp"
+                android:src="@drawable/corner_bottom_left"
+                android:contentDescription="@null" />
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="80dp"
+                android:layout_marginTop="80dp"
+                android:src="@drawable/corner_bottom_right"
+                android:contentDescription="@null" />
+
+        </FrameLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Processing status card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/processingCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="24dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:src="@mipmap/ic_launcher" />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <!-- Processing Overlay with Gradient -->
-    <View
-        android:id="@+id/processingOverlay"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="#AA000000"
-        app:layout_constraintTop_toTopOf="@id/ivPreview"
-        app:layout_constraintBottom_toBottomOf="@id/ivPreview"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:gravity="center">
 
-    <!-- Progress Bar -->
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:indeterminate="true"
-        app:layout_constraintTop_toTopOf="@id/processingOverlay"
-        app:layout_constraintBottom_toBottomOf="@id/processingOverlay"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_chainStyle="packed" />
+            <!-- Circular progress container -->
+            <FrameLayout
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:background="@drawable/icon_background_purple">
 
-    <!-- Processing Text -->
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/tvProcessing"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/analyzing_mushroom"
-        android:textColor="@android:color/white"
-        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
-        app:layout_constraintTop_toBottomOf="@id/progressBar"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    style="?android:attr/progressBarStyle"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:indeterminate="true"
+                    android:indeterminateTint="#7B1FA2" />
+
+            </FrameLayout>
+
+            <!-- Processing Text -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvProcessing"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/analyzing_mushroom"
+                android:textColor="#424242"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <!-- Sub text -->
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/processing_hint"
+                android:textColor="#757575"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

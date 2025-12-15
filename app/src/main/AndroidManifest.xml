@@ -41,12 +41,20 @@
             </intent-filter>
         </activity>
 
+
+
         <!-- Camera Activity -->
         <activity
             android:name=".CameraActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize"
             tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".ImagingTutorialActivity"
+            android:screenOrientation="portrait"
+            android:exported="false" />
+
 
         <!-- Gallery Process Activity -->
         <activity

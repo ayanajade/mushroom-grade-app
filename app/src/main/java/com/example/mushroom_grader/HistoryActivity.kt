@@ -106,36 +106,26 @@ class HistoryActivity : AppCompatActivity() {
     }
 
     private fun loadHistory() {
-        Log.d(TAG, "🔄 loadHistory() called")
+        Log.d(TAG, "loadHistory called")
         lifecycleScope.launch {
             try {
-                Log.d(TAG, "📥 Fetching from database...")
+                Log.d(TAG, "Fetching from database...")
                 val results = withContext(Dispatchers.IO) {
                     val database = AppDatabase.getDatabase(applicationContext)
-                    Log.d(TAG, "✅ Database instance obtained")
+                    Log.d(TAG, "Database instance obtained")
+
                     val fetchedResults = database.resultDao().getAllResults()
-                    Log.d(TAG, "📦 Database returned ${fetchedResults.size} results")
+                    Log.d(TAG, "Database returned ${fetchedResults.size} results")
                     fetchedResults
                 }
 
-                // Log each result
-                results.forEachIndexed { index, result ->
-                    Log.d(TAG, "📋 Result $index: ${result.className} - Confidence: ${result.confidence} - Time: ${result.timestamp}")
-                }
-
-                Log.d(TAG, "🔄 Updating allResults list...")
                 allResults.clear()
                 allResults.addAll(results)
-                Log.d(TAG, "✅ allResults now has ${allResults.size} items")
+                Log.d(TAG, "allResults now has ${allResults.size} items")
 
-                Log.d(TAG, "🎨 Calling displayResults()...")
                 displayResults()
-
             } catch (ex: Exception) {
-                Log.e(TAG, "❌ ERROR loading history", ex)
-                Log.e(TAG, "❌ Error message: ${ex.message}")
-                Log.e(TAG, "❌ Error stack trace: ${ex.stackTraceToString()}")
-
+                Log.e(TAG, "ERROR loading history: ${ex.message}", ex)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         this@HistoryActivity,
@@ -147,6 +137,7 @@ class HistoryActivity : AppCompatActivity() {
             }
         }
     }
+
 
     private fun displayResults() {
         Log.d(TAG, "🎨 displayResults() called")

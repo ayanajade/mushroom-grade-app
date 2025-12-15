@@ -13,7 +13,6 @@ import kotlin.math.abs
  * - Color vibrancy (fading indicates age)
  * - Browning and discoloration
  * - Dark spots and blemishes
- * - Surface moisture indicators
  * - Texture degradation
  * - Structural integrity
  */
@@ -43,15 +42,14 @@ class FreshnessAnalyzer {
             val browningScore = analyzeBrowningLevel(bitmap)
             val spotScore = analyzeSpotting(bitmap)
             val textureScore = analyzeTexture(bitmap)
-            val moistureScore = analyzeMoistureLevel(bitmap)
+
 
             // Calculate weighted freshness score
             val overallScore = calculateOverallScore(
                 colorScore,
                 browningScore,
                 spotScore,
-                textureScore,
-                moistureScore
+                textureScore
             )
 
             val status = determineFreshnessStatus(overallScore)
@@ -67,14 +65,12 @@ class FreshnessAnalyzer {
                 browningScore = browningScore,
                 spotScore = spotScore,
                 textureScore = textureScore,
-                moistureScore = moistureScore,
                 details = buildAnalysisDetails(
                     overallScore,
                     colorScore,
                     browningScore,
                     spotScore,
                     textureScore,
-                    moistureScore
                 )
             )
 
@@ -89,7 +85,6 @@ class FreshnessAnalyzer {
                 browningScore = 75,
                 spotScore = 75,
                 textureScore = 75,
-                moistureScore = 75,
                 details = "Analysis error - using default freshness estimate"
             )
         }
@@ -126,7 +121,7 @@ class FreshnessAnalyzer {
                 totalSaturation += saturation
 
                 // Count bright/vibrant pixels (fresh mushrooms)
-                if (max > 150 && saturation > 10) {
+                if (max > 120 && saturation > 8) {  // ✅ More lenient
                     brightPixels++
                 }
 
@@ -182,7 +177,7 @@ class FreshnessAnalyzer {
         val darkBrownRatio = darkBrownPixels.toFloat() / pixelCount
 
         // Less browning = higher score
-        val score = (100 - (brownRatio * 150 + darkBrownRatio * 250)).coerceIn(0.0f, 100.0f)
+        val score = (100 - (brownRatio * 80 + darkBrownRatio * 150)).coerceIn(0.0f, 100.0f)
 
         Log.d(TAG, "Browning level: ${score.toInt()}% (brown: $brownRatio, dark: $darkBrownRatio)")
         return score.toInt()
@@ -225,7 +220,7 @@ class FreshnessAnalyzer {
         val spotRatio = (spotPixels + darkPixels).toFloat() / pixelCount
 
         // Fewer spots = higher score
-        val score = (100 - (spotRatio * 200)).coerceIn(0.0f, 100.0f)
+        val score = (100 - (spotRatio * 120)).coerceIn(0.0f, 100.0f)
 
         Log.d(TAG, "Spotting level: ${score.toInt()}% (spot ratio: $spotRatio)")
         return score.toInt()
@@ -269,7 +264,7 @@ class FreshnessAnalyzer {
                 totalVariance += variance
 
                 // Fresh mushrooms have smooth, even texture
-                if (variance < 20) {
+                if (variance < 30) {  // ✅ Accepts more natural texture
                     smoothRegions++
                 }
             }
@@ -287,53 +282,6 @@ class FreshnessAnalyzer {
         return score.toInt()
     }
 
-    /**
-     * Analyze moisture level (too dry or too wet indicates problems)
-     */
-    private fun analyzeMoistureLevel(bitmap: Bitmap): Int {
-        val width = bitmap.width.coerceAtMost(100)
-        val height = bitmap.height.coerceAtMost(100)
-        val scaled = bitmap.scale(width, height, filter = true)
-
-        var shinyPixels = 0
-        var dullPixels = 0
-        var pixelCount = 0
-
-        for (x in 0 until width) {
-            for (y in 0 until height) {
-                val pixel = scaled[x, y]
-                val r = (pixel shr 16) and 0xFF
-                val g = (pixel shr 8) and 0xFF
-                val b = pixel and 0xFF
-
-                val brightness = (r + g + b) / 3
-                val saturation = maxOf(r, g, b) - minOf(r, g, b)
-
-                // Shiny/glossy appearance (too wet/slimy)
-                if (brightness > 200 && saturation < 30) {
-                    shinyPixels++
-                }
-
-                // Very dull (too dry)
-                if (brightness < 100 && saturation < 20) {
-                    dullPixels++
-                }
-
-                pixelCount++
-            }
-        }
-
-        scaled.recycle()
-
-        val shinyRatio = shinyPixels.toFloat() / pixelCount
-        val dullRatio = dullPixels.toFloat() / pixelCount
-
-        // Optimal moisture = not too shiny, not too dull
-        val score = (100 - (shinyRatio * 150 + dullRatio * 120)).coerceIn(0.0f, 100.0f)
-
-        Log.d(TAG, "Moisture level: ${score.toInt()}% (shiny: $shinyRatio, dull: $dullRatio)")
-        return score.toInt()
-    }
 
     /**
      * Calculate overall freshness score (weighted average)
@@ -342,15 +290,14 @@ class FreshnessAnalyzer {
         color: Int,
         browning: Int,
         spots: Int,
-        texture: Int,
-        moisture: Int
+        texture: Int
     ): Int {
         val weighted = (
-                color * 0.25 +       // Color is very important
-                        browning * 0.30 +    // Browning is critical
-                        spots * 0.20 +       // Spots indicate decay
-                        texture * 0.15 +     // Texture matters
-                        moisture * 0.10      // Moisture is indicator
+                color * 0.27 +       // Color is very important
+                        browning * 0.35 +    // Browning is critical
+                        spots * 0.23 +       // Spots indicate decay
+                        texture * 0.15    // Texture matters
+
                 )
 
         return weighted.toInt().coerceIn(0, 100)
@@ -399,7 +346,6 @@ class FreshnessAnalyzer {
         browning: Int,
         spots: Int,
         texture: Int,
-        moisture: Int
     ): String {
         return buildString {
             append("Visual Freshness Analysis:\n\n")
@@ -408,7 +354,6 @@ class FreshnessAnalyzer {
             append("• Browning Level: $browning%\n")
             append("• Spotting: $spots%\n")
             append("• Texture Quality: $texture%\n")
-            append("• Moisture Level: $moisture%\n")
         }
     }
 }
@@ -424,6 +369,5 @@ data class FreshnessAnalysisResult(
     val browningScore: Int,
     val spotScore: Int,
     val textureScore: Int,
-    val moistureScore: Int,
     val details: String
 )

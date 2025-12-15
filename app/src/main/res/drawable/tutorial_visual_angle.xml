@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#F5F5F5" />
+        </shape>
+    </item>
+
+    <!-- Angle arc background -->
+    <item
+        android:width="120dp"
+        android:height="120dp"
+        android:gravity="center">
+        <shape android:shape="oval">
+            <stroke android:width="2dp" android:color="#E0E0E0" />
+            <solid android:color="#00000000" />
+        </shape>
+    </item>
+
+    <!-- Phone (tilted representation) -->
+    <item
+        android:width="80dp"
+        android:height="120dp"
+        android:gravity="center"
+        android:left="30dp"
+        android:top="-20dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#212121" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+
+    <!-- Phone screen -->
+    <item
+        android:width="65dp"
+        android:height="105dp"
+        android:gravity="center"
+        android:left="30dp"
+        android:top="-20dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#64B5F6" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+
+    <!-- 45° indicator -->
+    <item
+        android:width="60dp"
+        android:height="3dp"
+        android:gravity="center"
+        android:left="-15dp"
+        android:top="30dp">
+        <rotate
+            android:fromDegrees="45"
+            android:toDegrees="45"
+            android:pivotX="0%"
+            android:pivotY="50%">
+            <shape android:shape="rectangle">
+                <solid android:color="#FF5722" />
+            </shape>
+        </rotate>
+    </item>
+
+    <!-- Mushroom -->
+    <item
+        android:width="50dp"
+        android:height="30dp"
+        android:gravity="center"
+        android:left="-40dp"
+        android:top="40dp">
+        <shape android:shape="oval">
+            <solid android:color="#D2691E" />
+        </shape>
+    </item>
+</layer-list>

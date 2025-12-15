@@ -1,5 +1,6 @@
 package com.example.mushroom_grader
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -23,8 +24,6 @@ class GalleryProcessActivity : AppCompatActivity() {
     private lateinit var binding: ActivityGalleryProcessBinding
     private lateinit var imageProcessor: ImageProcessor
     private lateinit var mlModelHelper: MLModelHelper
-
-    // ✅ FIXED: Changed to lowercase to follow Kotlin naming conventions
     private val tag = "GalleryProcessActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,7 +36,6 @@ class GalleryProcessActivity : AppCompatActivity() {
 
         val imageUriString = intent.getStringExtra("imageUri")
         if (imageUriString != null) {
-            // ✅ FIXED: Using KTX extension function String.toUri()
             processImage(imageUriString.toUri())
         } else {
             Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show()
@@ -45,13 +43,14 @@ class GalleryProcessActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun processImage(uri: Uri) {
         binding.tvProcessing.visibility = View.VISIBLE
         binding.progressBar.visibility = View.VISIBLE
 
         lifecycleScope.launch {
             try {
-                // ✅ Load bitmap with proper EXIF handling
+                // Load bitmap with proper EXIF handling (instance method - needs context)
                 val bitmap = imageProcessor.loadBitmapFromUri(uri)
                 if (bitmap == null) {
                     showError("Failed to load image")
@@ -60,7 +59,35 @@ class GalleryProcessActivity : AppCompatActivity() {
 
                 binding.ivPreview.setImageBitmap(bitmap)
 
-                // Save bitmap to file
+                // Analyze lighting quality for user feedback only
+                val lightingQuality = ImageProcessor.analyzeLightingQuality(bitmap)
+                Log.d(tag, "📊 Lighting quality: $lightingQuality")
+
+                when (lightingQuality) {
+                    ImageProcessor.Companion.LightingQuality.TOO_DARK -> {
+                        binding.tvProcessing.text = "⚠️ Image is too dark. Processing..."
+                        Toast.makeText(this@GalleryProcessActivity,
+                            "Image appears dark. Model will try to handle it.",
+                            Toast.LENGTH_SHORT).show()
+                    }
+                    ImageProcessor.Companion.LightingQuality.TOO_BRIGHT -> {
+                        binding.tvProcessing.text = "⚠️ Image is too bright. Processing..."
+                        Toast.makeText(this@GalleryProcessActivity,
+                            "Image appears bright. Model will try to handle it.",
+                            Toast.LENGTH_SHORT).show()
+                    }
+                    ImageProcessor.Companion.LightingQuality.SLIGHTLY_DARK -> {
+                        binding.tvProcessing.text = "Processing image (slightly dark)..."
+                    }
+                    ImageProcessor.Companion.LightingQuality.SLIGHTLY_BRIGHT -> {
+                        binding.tvProcessing.text = "Processing image (slightly bright)..."
+                    }
+                    ImageProcessor.Companion.LightingQuality.GOOD -> {
+                        binding.tvProcessing.text = "Processing image (good lighting)..."
+                    }
+                }
+
+                // Save bitmap to file (instance method - needs context)
                 val savedPath = imageProcessor.saveBitmapToFile(
                     bitmap,
                     imageProcessor.generateFileName("gallery")
@@ -73,20 +100,20 @@ class GalleryProcessActivity : AppCompatActivity() {
 
                 Log.d(tag, "✅ Image saved to: $savedPath")
 
-                // ✅ Process with full enhancement pipeline
+                // ✅ FIXED: Direct processing without enhancement
+                // Load and rotate only - resize and normalization happen in MLModelHelper
                 val processedBitmap = withContext(Dispatchers.Default) {
-                    val basic = imageProcessor.processImage(savedPath)
-                    imageProcessor.enhanceImageForDetection(basic)
+                    ImageProcessor.processImage(savedPath)
                 }
 
-                Log.d(tag, "✅ Image enhancement complete")
+                Log.d(tag, "✅ Image loaded with training-consistent preprocessing")
 
-                // Classify the enhanced image
+                // Classify the image
                 val result = withContext(Dispatchers.Default) {
                     mlModelHelper.classifyImage(processedBitmap)
                 }
 
-                // ✅ Handle all confidence levels
+                // Handle all confidence levels
                 if (result != null) {
                     val confidenceLevel = mlModelHelper.getConfidenceLevel(result.confidence)
                     Log.d(tag, "🎯 Detection result: ${result.className} (${result.confidence}, Level: $confidenceLevel)")
@@ -97,13 +124,11 @@ class GalleryProcessActivity : AppCompatActivity() {
                             binding.progressBar.visibility = View.GONE
                             showNonMushroomError()
                         }
-
                         "RETAKE" -> {
                             binding.tvProcessing.visibility = View.GONE
                             binding.progressBar.visibility = View.GONE
                             showLowConfidenceWarning(result, savedPath)
                         }
-
                         else -> {
                             // Good confidence (>85%)
                             navigateToResult(result, savedPath)
@@ -115,7 +140,6 @@ class GalleryProcessActivity : AppCompatActivity() {
                     Log.d(tag, "❌ Detection returned null")
                     showNonMushroomError()
                 }
-
             } catch (e: Exception) {
                 Log.e(tag, "Error processing image", e)
                 showError("Error processing image: ${e.message}")
@@ -155,9 +179,7 @@ class GalleryProcessActivity : AppCompatActivity() {
         result: com.example.mushroom_grader.ml.ClassificationResult,
         imagePath: String
     ) {
-        // ✅ FIXED: Explicitly specify Locale.US for String.format()
         val confidencePercent = String.format(Locale.US, "%.1f%%", result.confidence * 100)
-
         MaterialAlertDialogBuilder(this)
             .setTitle("⚠️ Low Confidence Detection")
             .setMessage(
@@ -198,7 +220,6 @@ class GalleryProcessActivity : AppCompatActivity() {
             putExtra("grade", result.grade)
             putExtra("imagePath", imagePath)
         }
-
         startActivity(intent)
         finish()
     }

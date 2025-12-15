@@ -5,10 +5,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F5F5F5"
     android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
-    <!-- App Bar -->
+    <!-- App Bar with gradient background matching history screen -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
@@ -19,9 +20,10 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Mushroom Grader"
-            app:titleCentered="true"
-            style="@style/Widget.Material3.Toolbar" />
+            android:background="@drawable/toolbar_gradient_background"
+            app:title="@string/app_name"
+            app:titleTextColor="@android:color/white"
+            app:titleCentered="true" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -35,69 +37,70 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="16dp">
 
-            <!-- Header Section -->
+            <!-- Header Section with consistent card styling -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                android:layout_marginBottom="20dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@android:color/white"
                 app:cardCornerRadius="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp"
+                    android:padding="24dp"
                     android:gravity="center">
 
                     <!-- App Icon/Logo -->
                     <ImageView
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
+                        android:layout_width="88dp"
+                        android:layout_height="88dp"
                         android:layout_marginBottom="16dp"
                         android:src="@mipmap/ic_launcher"
-                        android:contentDescription="Mushroom Grader Logo"
-                        tools:ignore="HardcodedText" />
+                        android:contentDescription="@string/app_name" />
 
                     <!-- Welcome Text -->
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tvWelcome"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Welcome to Mushroom Grader"
-                        android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
+                        android:text="@string/welcome_title"
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        android:textColor="#424242"
                         android:textAlignment="center"
-                        android:layout_marginBottom="8dp"
-                        tools:ignore="HardcodedText" />
+                        android:layout_marginBottom="8dp" />
 
                     <!-- Description Text -->
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tvDescription"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Identify and grade mushrooms using AI"
-                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                        android:text="@string/welcome_description"
+                        android:textSize="14sp"
                         android:textAlignment="center"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        tools:ignore="HardcodedText" />
+                        android:textColor="#757575" />
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Action Buttons Section -->
+            <!-- Section header with consistent styling -->
             <com.google.android.material.textview.MaterialTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Get Started"
-                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                android:layout_marginBottom="16dp"
-                tools:ignore="HardcodedText" />
+                android:text="@string/get_started"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#424242"
+                android:layout_marginBottom="12dp"
+                android:layout_marginStart="4dp" />
 
-            <!-- Camera Button -->
+            <!-- Camera Button with consistent card styling -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btnCamera"
                 android:layout_width="match_parent"
@@ -105,24 +108,33 @@
                 android:layout_marginBottom="12dp"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardElevation="2dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@android:color/white"
                 app:cardCornerRadius="16dp"
-                app:rippleColor="?attr/colorPrimary">
+                app:rippleColor="#E8F5E9">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:padding="20dp"
+                    android:padding="16dp"
                     android:gravity="center_vertical">
 
-                    <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:src="@android:drawable/ic_menu_camera"
-                        app:tint="?attr/colorPrimary"
-                        android:contentDescription="Camera"
-                        tools:ignore="HardcodedText" />
+                    <!-- Icon container with green background -->
+                    <FrameLayout
+                        android:layout_width="52dp"
+                        android:layout_height="52dp"
+                        android:background="@drawable/icon_background_green">
+
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="center"
+                            android:src="@android:drawable/ic_menu_camera"
+                            app:tint="@android:color/white"
+                            android:contentDescription="@string/camera" />
+
+                    </FrameLayout>
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -134,59 +146,67 @@
                         <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Take Photo"
-                            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                            tools:ignore="HardcodedText" />
+                            android:text="@string/take_photo"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#424242" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Capture mushroom with camera"
-                            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                            android:textColor="?attr/colorOnSurfaceVariant"
-                            tools:ignore="HardcodedText" />
+                            android:text="@string/capture_mushroom"
+                            android:textSize="13sp"
+                            android:textColor="#9E9E9E"
+                            android:layout_marginTop="2dp" />
 
                     </LinearLayout>
 
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@android:drawable/ic_menu_more"
-                        android:rotation="270"
-                        app:tint="?attr/colorOnSurfaceVariant"
-                        android:contentDescription="Open"
-                        tools:ignore="HardcodedText" />
+                        android:src="@android:drawable/ic_media_play"
+                        app:tint="#BDBDBD"
+                        android:contentDescription="@string/open" />
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Gallery Button -->
+            <!-- Gallery Button with consistent card styling -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btnGallery"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
+                android:layout_marginBottom="20dp"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardElevation="2dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@android:color/white"
                 app:cardCornerRadius="16dp"
-                app:rippleColor="?attr/colorPrimary">
+                app:rippleColor="#E3F2FD">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:padding="20dp"
+                    android:padding="16dp"
                     android:gravity="center_vertical">
 
-                    <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:src="@android:drawable/ic_menu_gallery"
-                        app:tint="?attr/colorPrimary"
-                        android:contentDescription="Gallery"
-                        tools:ignore="HardcodedText" />
+                    <!-- Icon container with purple background -->
+                    <FrameLayout
+                        android:layout_width="52dp"
+                        android:layout_height="52dp"
+                        android:background="@drawable/icon_background_purple">
+
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="center"
+                            android:src="@android:drawable/ic_menu_gallery"
+                            app:tint="@android:color/white"
+                            android:contentDescription="@string/gallery" />
+
+                    </FrameLayout>
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -198,73 +218,148 @@
                         <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Choose from Gallery"
-                            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                            tools:ignore="HardcodedText" />
+                            android:text="@string/choose_gallery"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#424242" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Select existing photo"
-                            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                            android:textColor="?attr/colorOnSurfaceVariant"
-                            tools:ignore="HardcodedText" />
+                            android:text="@string/select_existing"
+                            android:textSize="13sp"
+                            android:textColor="#9E9E9E"
+                            android:layout_marginTop="2dp" />
 
                     </LinearLayout>
 
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@android:drawable/ic_menu_more"
-                        android:rotation="270"
-                        app:tint="?attr/colorOnSurfaceVariant"
-                        android:contentDescription="Open"
-                        tools:ignore="HardcodedText" />
+                        android:src="@android:drawable/ic_media_play"
+                        app:tint="#BDBDBD"
+                        android:contentDescription="@string/open" />
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Divider -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginVertical="24dp"
-                android:background="?attr/colorOutlineVariant" />
-
-            <!-- Additional Options -->
+            <!-- Section header with consistent styling -->
             <com.google.android.material.textview.MaterialTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="More Options"
-                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                android:layout_marginBottom="16dp"
-                tools:ignore="HardcodedText" />
-
-            <!-- History Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnHistory"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:text="@string/more_options"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#424242"
                 android:layout_marginBottom="12dp"
-                android:text="View History"
-                android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
-                app:icon="@android:drawable/ic_menu_recent_history"
-                app:iconGravity="start"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                tools:ignore="HardcodedText" />
+                android:layout_marginStart="4dp" />
 
-            <!-- About Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAbout"
+            <!-- History and About buttons in a horizontal row -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="About"
-                android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
-                app:icon="@android:drawable/ic_menu_info_details"
-                app:iconGravity="start"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                tools:ignore="HardcodedText" />
+                android:orientation="horizontal">
+
+                <!-- History Button -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnHistory"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="@android:color/white"
+                    app:cardCornerRadius="16dp"
+                    app:rippleColor="#FFF3E0">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp"
+                        android:gravity="center">
+
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/icon_background_orange">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:src="@android:drawable/ic_menu_recent_history"
+                                app:tint="@android:color/white"
+                                android:contentDescription="@string/history" />
+
+                        </FrameLayout>
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/view_history"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="#424242"
+                            android:layout_marginTop="12dp" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- About Button -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnAbout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="@android:color/white"
+                    app:cardCornerRadius="16dp"
+                    app:rippleColor="#E3F2FD">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp"
+                        android:gravity="center">
+
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/icon_background_blue">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:src="@android:drawable/ic_menu_info_details"
+                                app:tint="@android:color/white"
+                                android:contentDescription="@string/about" />
+
+                        </FrameLayout>
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/about"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="#424242"
+                            android:layout_marginTop="12dp" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
 
         </LinearLayout>
 

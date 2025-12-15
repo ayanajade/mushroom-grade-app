@@ -11,7 +11,7 @@
     <string name="mushroom_image">Mushroom Image</string>
 
     <!-- Classification -->
-    <string name="confidence_format">Confidence: %s</string>
+    <string name="confidence_format">Accuracy: %s</string>
     <string name="category_format">Category: %s</string>
 
     <!-- Safety Status -->
@@ -74,7 +74,7 @@
     <string name="share_subject">Mushroom Classification - %s</string>
     <string name="share_result_header">🍄 Mushroom Classification Result</string>
     <string name="share_species">Species: %s</string>
-    <string name="share_confidence">Confidence: %s</string>
+    <string name="share_confidence">Accuracy: %s</string>
     <string name="share_safety">Safety: %s</string>
     <string name="share_grade">Grade: %s</string>
 
@@ -86,11 +86,7 @@
     <string name="delete">Delete</string>
     <string name="clear_all">Clear All</string>
 
-    <!-- ✅ NEW: About Activity Strings -->
-    <string name="about_description">AI-powered mushroom classification and grading system using advanced machine learning models to identify mushroom species, assess freshness, and predict shelf life.</string>
-    <string name="technical_details">Technical Details:\n\n• YOLOv8 Object Detection\n• TensorFlow Lite Model\n• Real-time Freshness Analysis\n• Multi-storage Prediction\n• Offline Classification</string>
-    <string name="app_credits">Developed by: [Your Name]\n\nSpecial thanks to:\n• TensorFlow Team\n• Android ML Kit\n• Open Source Community</string>
-    <string name="app_disclaimer">Disclaimer:\n\nThis app is for educational and informational purposes only. Always consult with a mycology expert before consuming wild mushrooms. The developers are not responsible for any harm resulting from mushroom consumption based on app predictions.</string>
+
 
     <!-- ✅ NEW: Gallery Process Activity Strings -->
     <string name="selected_mushroom_image">Selected Mushroom Image</string>
@@ -101,8 +97,8 @@
     <string name="sort">Sort</string>
     <string name="newest_first">Newest First</string>
     <string name="oldest_first">Oldest First</string>
-    <string name="highest_confidence">Highest Confidence</string>
-    <string name="lowest_confidence">Lowest Confidence</string>
+    <string name="highest_confidence">Highest Accuracy</string>
+    <string name="lowest_confidence">Lowest Accuracy</string>
     <string name="name_a_z">Name A-Z</string>
     <string name="name_z_a">Name Z-A</string>
 
@@ -192,9 +188,145 @@
     <string name="clear_history">Clear History</string>
     <string name="delete_all">Delete All</string>
 
-    <!-- Stats format strings -->
+    <string name="total_scans">Total scans</string>
+    <string name="zero">0</string>
+    <string name="total">Total</string>
+
+    <string name="poison">Poison</string>
+    <string name="edible">Edible</string>
+    <string name="recent_scans">Recent Scans</string>
+
+
+    <!-- Added new strings for item_history layout -->
+
+    <string name="confidence_label">Accuracy:</string>
+    <string name="safe">SAFE</string>
+    <string name="unsafe">POISON</string>
+
+    <!-- Added new strings for activity_main layout -->
+    <string name="welcome_title">Welcome to Mushroom Grader</string>
+    <string name="welcome_description">Identify and grade mushrooms using AI</string>
+    <string name="get_started">Get Started</string>
+
+    <string name="capture_mushroom">Capture mushroom with camera</string>
+    <string name="choose_gallery">Choose from Gallery</string>
+    <string name="select_existing">Select existing photo</string>
+    <string name="more_options">More Options</string>
+    <string name="open">Open</string>
     <string name="total_count">Total: %d</string>
-    <string name="poisonous_count">Poison: %d</string>
+    <string name="poisonous_count">Poisonous: %d</string>
     <string name="edible_count">Edible: %d</string>
+    <string name="history_header">Classification History</string>
+
+
+
+
+
+
+
+    <!-- About page strings -->
+    <string name="about_title">About</string>
+    <string name="app_icon_desc">App Icon</string>
+    <string name="version_text">Version 1.0</string>
+    <string name="about_this_app">About This App</string>
+    <string name="about_description">Grading Home-Grown Mushroom Using Deep Learning is an AI-powered mobile application that uses computer vision and machine learning to grade home-grown mushrooms. Simply capture a photo to assess mushroom quality based on cap size, stem length, color uniformity, and overall appearance.</string>
+    <string name="technical_details_title">Technical Details</string>
+    <string name="technical_details">• YOLOv8 Object Detection\n• TensorFlow Lite Model\n• Real-time Image Processing\n• Supports Oyster, Shiitake, and Button Mushrooms\n• Minimum 8MP Camera Required</string>
+    <string name="credits_title">Developers</string>
+    <string name="app_credits">Ayana Jade F. Alejo\nAlfaith Mae M. Luzon\nJustine Jose B. Salvador\n\nAdviser: Jaydee C. Ballaho, MIT\n\nWestern Mindanao State University\nCollege of Computing Studies\nDepartment of Computer Science</string>
+    <string name="disclaimer_title">Disclaimer</string>
+    <string name="app_disclaimer">This application is developed for educational and research purposes as part of a thesis project. It is intended for small-scale home-based mushroom grading and should not replace expert judgment for commercial operations. Always verify mushroom safety with qualified experts before consumption.</string>
+    <string name="view_on_github">View on GitHub</string>
+    <string name="email_us">Contact Us</string>
+    <string name="share_app">Share App</string>
+
+    <!-- Result activity strings -->
+    <string name="safety_status">Safety status</string>
+    <!-- Gallery process activity strings -->
+    <string name="processing_hint">Please wait while we analyze your image</string>
+    <string name="freshness_status_format">%1$s\n%2$s</string>
+
+    <!-- Camera Activity Strings -->
+
+    <string name="help">Help</string>
+    <string name="camera_checklist">📋 CHECKLIST:\n□ Plain background\n□ Natural lighting\n□ 13–17 cm distance\n□ Tap to focus</string>
+    <string name="tap_mushroom_to_focus">📸 TAP MUSHROOM TO FOCUS</string>
+    <string name="capture_focused">📸 CAPTURE (Focused ✓)</string>
+    <string name="tap_instruction">💡 Tap anywhere on mushroom to focus before capturing</string>
+    <string name="focused_on_mushroom">✓ Focused on mushroom</string>
+    <string name="capturing">📸 Capturing…</string>
+    <string name="dark_image_adjusting">⚠️ Dark image - Adjusting brightness…</string>
+    <string name="bright_image_adjusting">⚠️ Bright image - Adjusting exposure…</string>
+    <string name="good_lighting_processing">✓ Good lighting - Processing…</string>
+    <string name="hold_steady_tip">💡 Hold steady, keep 45° angle, 15cm away</string>
+    <string name="tap_to_focus_first">💡 Tap on mushroom to focus first</string>
+
+    <!-- Tutorial Strings -->
+    <string name="tutorial_step_progress">%1$d of %2$d</string>
+    <string name="tutorial_intro_icon">📱</string>
+    <string name="tutorial_intro_title">📸 Taking Consistent Photos</string>
+    <string name="tutorial_intro_description">Follow these steps for accurate mushroom classification.\n\nConsistency is key - same setup gives same results!</string>
+
+    <string name="tutorial_background_icon">🎨</string>
+    <string name="tutorial_background_title">1️⃣ Background Setup</string>
+    <string name="tutorial_background_description">Place mushroom on a clean, plain surface</string>
+
+    <string name="tutorial_lighting_icon">💡</string>
+    <string name="tutorial_lighting_title">2️⃣ Lighting</string>
+    <string name="tutorial_lighting_description">Use natural, indirect light</string>
+
+    <string name="tutorial_distance_icon">📏</string>
+    <string name="tutorial_distance_title">3️⃣ Distance</string>
+    <string name="tutorial_distance_description">Hold phone 13–17 cm from mushroom</string>
+
+    <string name="tutorial_angle_icon">📐</string>
+    <string name="tutorial_angle_title">4️⃣ Angle</string>
+    <string name="tutorial_angle_description">Hold phone at 45° angle</string>
+
+    <string name="tutorial_focus_icon">🎯</string>
+    <string name="tutorial_focus_title">5️⃣ Focus</string>
+    <string name="tutorial_focus_description">Tap on mushroom to focus</string>
+
+    <string name="tutorial_framing_icon">🖼️</string>
+    <string name="tutorial_framing_title">6️⃣ Framing</string>
+    <string name="tutorial_framing_description">Center mushroom in guide frame</string>
+
+    <string name="tutorial_ready_icon">🎉</string>
+    <string name="tutorial_ready_title">✅ Ready to Start!</string>
+
+
+    <string name="button_previous">Previous</string>
+    <string name="button_skip">Skip</string>
+    <string name="button_next">Next</string>
+    <string name="button_start_camera">Start Camera</string>
+
+    <!-- Dialog Strings -->
+    <string name="quick_tips_title">📸 How to Take Consistent Photos</string>
+    <string name="quick_tips_message">For accurate classification, follow these steps:\n\n1️⃣ BACKGROUND: Plain white/light surface\n2️⃣ LIGHTING: Natural daylight (near window)\n3️⃣ DISTANCE: 13–17 cm (hand-width away)\n4️⃣ ANGLE: 45° to mushroom\n5️⃣ FOCUS: Tap on mushroom cap\n6️⃣ FRAMING: Center in guide frame\n\n💡 Same setup = Same results!</string>
+    <string name="got_it">Got it!</string>
+    <string name="full_tutorial">Full Tutorial</string>
+
+    <string name="not_mushroom_title">❌ Not a Mushroom Detected</string>
+    <string name="imaging_tips_message">The image quality or content is not ideal.\n\n✅ CHECK YOUR SETUP:\n• Plain white/light background?\n• Natural lighting (near window)?\n• Phone 13–17 cm away (hand-width)?\n• 45° angle showing cap AND stem?\n• Mushroom fills 70% of frame?\n• Tapped to focus on mushroom?\n\n💡 Same setup every time = Consistent results!</string>
+    <string name="try_again">Try Again</string>
+    <string name="see_tutorial">See Tutorial</string>
+
+
+
+    <string name="camera_start_failed">Failed to start camera: %s</string>
+    <string name="camera_bind_failed">Failed to bind camera: %s</string>
+    <string name="photo_capture_failed">Photo capture failed: %s</string>
+    <string name="classification_failed">Classification failed: %s</string>
+
+    <!-- Add this to your existing strings.xml -->
+
+    <!-- Tutorial Visual Content Description -->
+    <string name="tutorial_visual">Tutorial step illustration</string>
+
+    <string name="tutorial_ready_description">You\'re ready to take professional-quality mushroom photos! Remember to follow these steps each time for consistent results.</string>
+
+
+
+
 
 </resources>

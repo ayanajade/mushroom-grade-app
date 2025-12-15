@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#F5F5F5" />
+        </shape>
+    </item>
+
+    <!-- Phone (top) -->
+    <item
+        android:width="60dp"
+        android:height="100dp"
+        android:gravity="top|center_horizontal"
+        android:top="10dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#212121" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+
+    <!-- Phone screen -->
+    <item
+        android:width="50dp"
+        android:height="85dp"
+        android:gravity="top|center_horizontal"
+        android:top="17dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#64B5F6" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+
+    <!-- Distance arrow down -->
+    <item
+        android:width="3dp"
+        android:height="60dp"
+        android:gravity="center_horizontal"
+        android:top="115dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#4CAF50" />
+        </shape>
+    </item>
+
+    <!-- Distance text background -->
+    <item
+        android:width="80dp"
+        android:height="30dp"
+        android:gravity="center">
+        <shape android:shape="rectangle">
+            <solid android:color="#4CAF50" />
+            <corners android:radius="15dp" />
+        </shape>
+    </item>
+
+    <!-- Mushroom (bottom) -->
+    <item
+        android:width="50dp"
+        android:height="30dp"
+        android:gravity="bottom|center_horizontal"
+        android:bottom="20dp">
+        <shape android:shape="oval">
+            <solid android:color="#D2691E" />
+        </shape>
+    </item>
+
+    <item
+        android:width="30dp"
+        android:height="30dp"
+        android:gravity="bottom|center_horizontal"
+        android:bottom="10dp">
+        <shape android:shape="oval">
+            <solid android:color="#8B4513" />
+        </shape>
+    </item>
+</layer-list>
