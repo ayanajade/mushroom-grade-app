@@ -102,6 +102,8 @@ dependencies {
     // ==================== UI Components ====================
     implementation("androidx.recyclerview:recyclerview:1.4.0")
     implementation("androidx.cardview:cardview:1.0.0")
+    implementation("androidx.viewpager2:viewpager2:1.1.0")
+
 
     // ==================== PDF Export ====================
     implementation("com.itextpdf:itext7-core:7.2.6")

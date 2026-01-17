@@ -5,16 +5,18 @@
             <solid android:color="@android:color/transparent" />
         </shape>
     </item>
-    <item android:left="0dp" android:top="0dp" android:right="28dp" android:bottom="36dp">
+
+    <item android:width="22dp" android:height="3dp" android:gravity="top|start">
         <shape android:shape="rectangle">
-            <solid android:color="#00E676" />
-            <corners android:topLeftRadius="16dp" />
+            <solid android:color="#22C55E" />
+            <corners android:radius="2dp" />
         </shape>
     </item>
-    <item android:left="0dp" android:top="0dp" android:right="36dp" android:bottom="28dp">
+
+    <item android:width="3dp" android:height="22dp" android:gravity="top|start">
         <shape android:shape="rectangle">
-            <solid android:color="#00E676" />
-            <corners android:topLeftRadius="16dp" />
+            <solid android:color="#22C55E" />
+            <corners android:radius="2dp" />
         </shape>
     </item>
 </layer-list>

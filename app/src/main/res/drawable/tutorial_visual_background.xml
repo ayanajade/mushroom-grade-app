@@ -1,31 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- White surface/table -->
+
+    <!-- Card surface -->
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#FFFFFF" />
-            <corners android:radius="8dp" />
+            <solid android:color="#FFFFFF"/>
+            <stroke android:width="1dp" android:color="#EEF0F4"/>
+            <corners android:radius="18dp"/>
         </shape>
     </item>
 
-    <!-- Mushroom on surface -->
+    <!-- Soft surface vignette -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="220dp"
+                android:centerX="50%"
+                android:centerY="40%"
+                android:startColor="#00FFFFFF"
+                android:endColor="#120F172A"/>
+            <corners android:radius="18dp"/>
+        </shape>
+    </item>
+
+    <!-- Ground shadow -->
     <item
-        android:width="80dp"
-        android:height="80dp"
-        android:gravity="center">
+        android:width="132dp"
+        android:height="20dp"
+        android:gravity="center"
+        android:top="54dp">
         <shape android:shape="oval">
-            <solid android:color="#8B4513" />
+            <gradient
+                android:type="radial"
+                android:gradientRadius="80dp"
+                android:centerX="50%"
+                android:centerY="50%"
+                android:startColor="#220F172A"
+                android:endColor="#000F172A"/>
         </shape>
     </item>
 
-    <!-- Mushroom cap -->
+    <!-- Stem (3D) -->
     <item
-        android:width="100dp"
-        android:height="60dp"
+        android:width="36dp"
+        android:height="48dp"
+        android:gravity="center"
+        android:top="26dp">
+        <shape android:shape="rectangle">
+            <gradient android:angle="0" android:startColor="#FFF3E7D3" android:endColor="#FFE6D4B8"/>
+            <corners android:radius="18dp"/>
+        </shape>
+    </item>
+
+    <!-- Cap base (3D) -->
+    <item
+        android:width="118dp"
+        android:height="70dp"
         android:gravity="center|top"
-        android:top="20dp">
+        android:top="40dp">
         <shape android:shape="oval">
-            <solid android:color="#D2691E" />
+            <gradient android:angle="90" android:startColor="#FFF59E0B" android:endColor="#FFD97706"/>
         </shape>
     </item>
+
+    <!-- Cap highlight -->
+    <item
+        android:width="88dp"
+        android:height="42dp"
+        android:gravity="center|top"
+        android:top="48dp"
+        android:left="12dp">
+        <shape android:shape="oval">
+            <gradient android:angle="90" android:startColor="#33FFFFFF" android:endColor="#00FFFFFF"/>
+        </shape>
+    </item>
+
+    <!-- Cap rim shadow -->
+    <item
+        android:width="118dp"
+        android:height="70dp"
+        android:gravity="center|top"
+        android:top="44dp">
+        <shape android:shape="oval">
+            <gradient android:angle="90" android:startColor="#00000000" android:endColor="#220F172A"/>
+        </shape>
+    </item>
+
 </layer-list>

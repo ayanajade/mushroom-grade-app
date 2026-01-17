@@ -17,7 +17,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Locale
 
 class GalleryProcessActivity : AppCompatActivity() {
 
@@ -28,6 +27,7 @@ class GalleryProcessActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         binding = ActivityGalleryProcessBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -50,7 +50,7 @@ class GalleryProcessActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                // Load bitmap with proper EXIF handling (instance method - needs context)
+                // Load bitmap with proper EXIF handling
                 val bitmap = imageProcessor.loadBitmapFromUri(uri)
                 if (bitmap == null) {
                     showError("Failed to load image")
@@ -66,28 +66,36 @@ class GalleryProcessActivity : AppCompatActivity() {
                 when (lightingQuality) {
                     ImageProcessor.Companion.LightingQuality.TOO_DARK -> {
                         binding.tvProcessing.text = "⚠️ Image is too dark. Processing..."
-                        Toast.makeText(this@GalleryProcessActivity,
+                        Toast.makeText(
+                            this@GalleryProcessActivity,
                             "Image appears dark. Model will try to handle it.",
-                            Toast.LENGTH_SHORT).show()
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
+
                     ImageProcessor.Companion.LightingQuality.TOO_BRIGHT -> {
                         binding.tvProcessing.text = "⚠️ Image is too bright. Processing..."
-                        Toast.makeText(this@GalleryProcessActivity,
+                        Toast.makeText(
+                            this@GalleryProcessActivity,
                             "Image appears bright. Model will try to handle it.",
-                            Toast.LENGTH_SHORT).show()
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
+
                     ImageProcessor.Companion.LightingQuality.SLIGHTLY_DARK -> {
                         binding.tvProcessing.text = "Processing image (slightly dark)..."
                     }
+
                     ImageProcessor.Companion.LightingQuality.SLIGHTLY_BRIGHT -> {
                         binding.tvProcessing.text = "Processing image (slightly bright)..."
                     }
+
                     ImageProcessor.Companion.LightingQuality.GOOD -> {
                         binding.tvProcessing.text = "Processing image (good lighting)..."
                     }
                 }
 
-                // Save bitmap to file (instance method - needs context)
+                // Save bitmap to file
                 val savedPath = imageProcessor.saveBitmapToFile(
                     bitmap,
                     imageProcessor.generateFileName("gallery")
@@ -100,7 +108,6 @@ class GalleryProcessActivity : AppCompatActivity() {
 
                 Log.d(tag, "✅ Image saved to: $savedPath")
 
-                // ✅ FIXED: Direct processing without enhancement
                 // Load and rotate only - resize and normalization happen in MLModelHelper
                 val processedBitmap = withContext(Dispatchers.Default) {
                     ImageProcessor.processImage(savedPath)
@@ -113,33 +120,38 @@ class GalleryProcessActivity : AppCompatActivity() {
                     mlModelHelper.classifyImage(processedBitmap)
                 }
 
-                // Handle all confidence levels
+                binding.tvProcessing.visibility = View.GONE
+                binding.progressBar.visibility = View.GONE
+
                 if (result != null) {
                     val confidenceLevel = mlModelHelper.getConfidenceLevel(result.confidence)
                     Log.d(tag, "🎯 Detection result: ${result.className} (${result.confidence}, Level: $confidenceLevel)")
 
                     when (confidenceLevel) {
                         "REJECTED" -> {
-                            binding.tvProcessing.visibility = View.GONE
-                            binding.progressBar.visibility = View.GONE
                             showNonMushroomError()
                         }
+
+                        // ✅ CHANGE: no bottom sheet; still allow navigation even if RETAKE.
                         "RETAKE" -> {
-                            binding.tvProcessing.visibility = View.GONE
-                            binding.progressBar.visibility = View.GONE
-                            showLowConfidenceWarning(result, savedPath)
+                            Toast.makeText(
+                                this@GalleryProcessActivity,
+                                "Low confidence result. Proceeding to result page.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            navigateToResult(result, savedPath)
                         }
+
                         else -> {
-                            // Good confidence (>85%)
+                            // Good confidence in your existing logic
                             navigateToResult(result, savedPath)
                         }
                     }
                 } else {
-                    binding.tvProcessing.visibility = View.GONE
-                    binding.progressBar.visibility = View.GONE
                     Log.d(tag, "❌ Detection returned null")
                     showNonMushroomError()
                 }
+
             } catch (e: Exception) {
                 Log.e(tag, "Error processing image", e)
                 showError("Error processing image: ${e.message}")
@@ -164,42 +176,8 @@ class GalleryProcessActivity : AppCompatActivity() {
                         "• Keep mushroom centered and fully visible\n" +
                         "• Avoid blurry or heavily compressed images"
             )
-            .setPositiveButton("Choose Another") { _, _ ->
-                finish()
-            }
+            .setPositiveButton("Choose Another") { _, _ -> finish() }
             .setNegativeButton("Cancel") { _, _ ->
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
-            }
-            .setCancelable(false)
-            .show()
-    }
-
-    private fun showLowConfidenceWarning(
-        result: com.example.mushroom_grader.ml.ClassificationResult,
-        imagePath: String
-    ) {
-        val confidencePercent = String.format(Locale.US, "%.1f%%", result.confidence * 100)
-        MaterialAlertDialogBuilder(this)
-            .setTitle("⚠️ Low Confidence Detection")
-            .setMessage(
-                "Detected: ${result.className}\n" +
-                        "Confidence: $confidencePercent\n\n" +
-                        "The confidence level is low (60-85%). This may not be accurate.\n\n" +
-                        "Recommendations:\n" +
-                        "• Select a clearer photo with better lighting\n" +
-                        "• Ensure the mushroom is fully visible\n" +
-                        "• Try a different angle or image\n" +
-                        "• Use a higher resolution photo\n\n" +
-                        "Do you want to proceed with this result or try another image?"
-            )
-            .setPositiveButton("Proceed Anyway") { _, _ ->
-                navigateToResult(result, imagePath)
-            }
-            .setNegativeButton("Choose Another") { _, _ ->
-                finish()
-            }
-            .setNeutralButton("Go Home") { _, _ ->
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
             }
@@ -220,6 +198,7 @@ class GalleryProcessActivity : AppCompatActivity() {
             putExtra("grade", result.grade)
             putExtra("imagePath", imagePath)
         }
+
         startActivity(intent)
         finish()
     }

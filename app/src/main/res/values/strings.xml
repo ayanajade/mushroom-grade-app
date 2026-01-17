@@ -15,11 +15,11 @@
     <string name="category_format">Category: %s</string>
 
     <!-- Safety Status -->
-    <string name="poisonous_title">⚠️ POISONOUS</string>
+    <string name="poisonous_title">POISONOUS</string>
     <string name="poisonous_message">DO NOT CONSUME - This mushroom is toxic and dangerous</string>
     <string name="poisonous">Poisonous</string>
 
-    <string name="inedible_title">⚠️ INEDIBLE</string>
+    <string name="inedible_title">INEDIBLE</string>
     <string name="inedible_message">Not recommended for consumption - Not toxic but not suitable for eating</string>
 
     <string name="safe_to_eat_title">✅ SAFE TO EAT</string>
@@ -30,7 +30,7 @@
     <string name="grade_label">Grade</string>
 
     <!-- Freshness Analysis -->
-    <string name="freshness_analysis">🔍 Freshness Analysis</string>
+    <string name="freshness_analysis">Freshness Analysis</string>
     <string name="freshness_score_label">Freshness Score</string>
     <string name="status_label">Status</string>
     <string name="view_detailed_analysis">View Detailed Analysis</string>
@@ -38,7 +38,7 @@
     <string name="current_freshness_format">Current Freshness: %d%% - %s</string>
 
     <!-- Storage Predictions -->
-    <string name="shelf_life_by_storage">📅 Shelf Life by Storage Method</string>
+    <string name="shelf_life_by_storage">Shelf Life by Storage Method</string>
     <string name="calculated_based_on_condition">Calculated based on current mushroom condition</string>
     <string name="storage_predictions_subtitle">Select storage method to see shelf life prediction</string>
     <string name="select_storage_method">Select Storage Method</string>
@@ -218,6 +218,16 @@
     <string name="edible_count">Edible: %d</string>
     <string name="history_header">Classification History</string>
 
+    <string name="camera_title">Scan Mushroom</string>
+    <string name="checklist_title">Checklist</string>
+
+    <!-- Cleaner, no emojis/checkbox glyphs so it looks modern inside the new card -->
+    <string name="camera_checklist">• Plain background\n• Natural lighting\n• Hold phone 13–17 cm away\n• Tap mushroom to focus</string>
+
+    <!-- Cleaner hint text to match the new style -->
+    <string name="tap_instruction">Tap the mushroom to focus before capturing.</string>
+
+
 
 
 
@@ -249,11 +259,6 @@
     <!-- Camera Activity Strings -->
 
     <string name="help">Help</string>
-    <string name="camera_checklist">📋 CHECKLIST:\n□ Plain background\n□ Natural lighting\n□ 13–17 cm distance\n□ Tap to focus</string>
-    <string name="tap_mushroom_to_focus">📸 TAP MUSHROOM TO FOCUS</string>
-    <string name="capture_focused">📸 CAPTURE (Focused ✓)</string>
-    <string name="tap_instruction">💡 Tap anywhere on mushroom to focus before capturing</string>
-    <string name="focused_on_mushroom">✓ Focused on mushroom</string>
     <string name="capturing">📸 Capturing…</string>
     <string name="dark_image_adjusting">⚠️ Dark image - Adjusting brightness…</string>
     <string name="bright_image_adjusting">⚠️ Bright image - Adjusting exposure…</string>
@@ -324,9 +329,17 @@
     <string name="tutorial_visual">Tutorial step illustration</string>
 
     <string name="tutorial_ready_description">You\'re ready to take professional-quality mushroom photos! Remember to follow these steps each time for consistent results.</string>
+    <string name="welcome_to_mushroom_grader">Welcome to Mushroom Grader</string>
+    <string name="identify_and_grade_mushrooms_using_ai">Identify and grade mushrooms using AI</string>
+    <string name="scan_with_camera_or_choose_a_photo">Scan with camera or choose a photo.</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="status_title">Status</string>
 
-
-
+    <string name="tap_mushroom_to_focus">Tap mushroom to focus</string>
+    <string name="capture_focused">Capture</string>
+    <string name="focused_on_mushroom">Focused on mushroom</string>
+    <string name="tap_cards_for_details">Tap cards for details</string>
 
 
 </resources>

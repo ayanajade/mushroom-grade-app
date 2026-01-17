@@ -1,76 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Background -->
+
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#F5F5F5" />
+            <solid android:color="#F8FAFC"/>
         </shape>
     </item>
 
-    <!-- Angle arc background -->
-    <item
-        android:width="120dp"
-        android:height="120dp"
-        android:gravity="center">
+    <!-- Mushroom shadow -->
+    <item android:width="140dp" android:height="22dp" android:gravity="bottom|start" android:left="22dp" android:bottom="18dp">
         <shape android:shape="oval">
-            <stroke android:width="2dp" android:color="#E0E0E0" />
-            <solid android:color="#00000000" />
+            <gradient android:type="radial" android:gradientRadius="90dp" android:startColor="#240F172A" android:endColor="#000F172A"/>
         </shape>
     </item>
 
-    <!-- Phone (tilted representation) -->
-    <item
-        android:width="80dp"
-        android:height="120dp"
-        android:gravity="center"
-        android:left="30dp"
-        android:top="-20dp">
+    <!-- Mushroom stem -->
+    <item android:width="34dp" android:height="44dp" android:gravity="bottom|start" android:left="60dp" android:bottom="22dp">
         <shape android:shape="rectangle">
-            <solid android:color="#212121" />
-            <corners android:radius="8dp" />
+            <gradient android:angle="0" android:startColor="#FFF3E7D3" android:endColor="#FFE6D4B8"/>
+            <corners android:radius="18dp"/>
         </shape>
     </item>
 
-    <!-- Phone screen -->
-    <item
-        android:width="65dp"
-        android:height="105dp"
-        android:gravity="center"
-        android:left="30dp"
-        android:top="-20dp">
-        <shape android:shape="rectangle">
-            <solid android:color="#64B5F6" />
-            <corners android:radius="4dp" />
+    <!-- Mushroom cap -->
+    <item android:width="114dp" android:height="66dp" android:gravity="bottom|start" android:left="26dp" android:bottom="48dp">
+        <shape android:shape="oval">
+            <gradient android:angle="90" android:startColor="#FFF59E0B" android:endColor="#FFD97706"/>
         </shape>
     </item>
 
-    <!-- 45° indicator -->
-    <item
-        android:width="60dp"
-        android:height="3dp"
-        android:gravity="center"
-        android:left="-15dp"
-        android:top="30dp">
-        <rotate
-            android:fromDegrees="45"
-            android:toDegrees="45"
-            android:pivotX="0%"
-            android:pivotY="50%">
+    <!-- Angle arc -->
+    <item android:width="140dp" android:height="140dp" android:gravity="center" android:left="38dp" android:top="-8dp">
+        <shape android:shape="oval">
+            <stroke android:width="2dp" android:color="#E2E8F0"/>
+            <solid android:color="#00000000"/>
+        </shape>
+    </item>
+
+    <!-- Tilt indicator -->
+    <item android:width="76dp" android:height="4dp" android:gravity="center" android:left="-6dp" android:top="36dp">
+        <rotate android:fromDegrees="45" android:toDegrees="45" android:pivotX="0%" android:pivotY="50%">
             <shape android:shape="rectangle">
-                <solid android:color="#FF5722" />
+                <gradient android:angle="0" android:startColor="#22C55E" android:endColor="#16A34A"/>
+                <corners android:radius="2dp"/>
             </shape>
         </rotate>
     </item>
 
-    <!-- Mushroom -->
-    <item
-        android:width="50dp"
-        android:height="30dp"
-        android:gravity="center"
-        android:left="-40dp"
-        android:top="40dp">
-        <shape android:shape="oval">
-            <solid android:color="#D2691E" />
-        </shape>
+    <!-- Phone shadow (behind) -->
+    <item android:gravity="center" android:left="78dp" android:top="-18dp">
+        <rotate android:fromDegrees="-20" android:toDegrees="-20" android:pivotX="50%" android:pivotY="50%">
+            <shape android:shape="rectangle" android:width="90dp" android:height="18dp">
+                <gradient android:type="radial" android:gradientRadius="60dp" android:startColor="#240F172A" android:endColor="#000F172A"/>
+                <corners android:radius="10dp"/>
+            </shape>
+        </rotate>
     </item>
+
+    <!-- Phone body (3D) -->
+    <item android:gravity="center" android:left="78dp" android:top="-18dp">
+        <rotate android:fromDegrees="-20" android:toDegrees="-20" android:pivotX="50%" android:pivotY="50%">
+            <shape android:shape="rectangle" android:width="84dp" android:height="128dp">
+                <gradient android:angle="0" android:startColor="#FF1F2937" android:endColor="#FF0B1220"/>
+                <corners android:radius="20dp"/>
+            </shape>
+        </rotate>
+    </item>
+
+    <!-- Phone screen -->
+    <item android:gravity="center" android:left="78dp" android:top="-18dp">
+        <rotate android:fromDegrees="-20" android:toDegrees="-20" android:pivotX="50%" android:pivotY="50%">
+            <shape android:shape="rectangle" android:width="72dp" android:height="114dp">
+                <gradient android:angle="90" android:startColor="#FFA7C7FF" android:endColor="#FF60A5FA"/>
+                <corners android:radius="16dp"/>
+            </shape>
+        </rotate>
+    </item>
+
 </layer-list>

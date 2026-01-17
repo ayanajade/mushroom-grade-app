@@ -65,6 +65,7 @@ class ResultActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "🚀 onCreate started")
+
         binding = ActivityResultBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -99,6 +100,7 @@ class ResultActivity : AppCompatActivity() {
      */
     private fun loadDataAndDisplay() {
         Log.d(TAG, "📥 Loading data from intent...")
+
         getIntentData()
         displayResults()
         displayStoragePredictions()
@@ -153,6 +155,8 @@ class ResultActivity : AppCompatActivity() {
                 Log.e(TAG, "❌ Failed to load image", ex)
                 binding.ivMushroom.setImageResource(android.R.mipmap.sym_def_app_icon)
             }
+        } ?: run {
+            binding.ivMushroom.setImageResource(android.R.mipmap.sym_def_app_icon)
         }
     }
 
@@ -161,7 +165,8 @@ class ResultActivity : AppCompatActivity() {
      */
     private fun displayBasicInfo() {
         binding.tvMushroomName.text = className
-        val confidencePercent = String.format(Locale.getDefault(), "%.2f%%", confidence * 100)
+
+        val confidencePercent = String.format(Locale.getDefault(), "%.2f%%", confidence * 100f)
         binding.tvConfidence.text = getString(R.string.confidence_format, confidencePercent)
     }
 
@@ -200,10 +205,7 @@ class ResultActivity : AppCompatActivity() {
      * Helper method to set safety card appearance
      */
     private fun setSafetyCard(colorRes: Int, titleRes: Int, messageRes: Int) {
-        binding.cardSafety.setCardBackgroundColor(
-            ContextCompat.getColor(this, colorRes)
-        )
-
+        binding.cardSafety.setCardBackgroundColor(ContextCompat.getColor(this, colorRes))
         binding.tvSafetyTitle.setText(titleRes)
         binding.tvSafetyMessage.setText(messageRes)
 
@@ -253,11 +255,9 @@ class ResultActivity : AppCompatActivity() {
                     imageBitmap?.let { bitmap ->
                         Log.d(TAG, "🔍 Starting freshness and characteristics analysis...")
 
-                        // Freshness analysis
                         val freshnessResult = freshnessAnalyzer.analyzeFreshness(bitmap, className)
-
-                        // ✅ NEW: Characteristics analysis
-                        val characteristics = characteristicsAnalyzer.analyzeCharacteristics(bitmap, className, grade)
+                        val characteristics =
+                            characteristicsAnalyzer.analyzeCharacteristics(bitmap, className, grade)
 
                         Pair(freshnessResult, characteristics)
                     }
@@ -267,38 +267,34 @@ class ResultActivity : AppCompatActivity() {
                     val (freshnessResult, characteristics) = analysisResults
 
                     Log.d(TAG, "✅ Analysis complete:")
-                    Log.d(TAG, "  Freshness Score: ${freshnessResult.freshnessScore}%")
-                    Log.d(TAG, "  Size: ${characteristics.estimatedSize}")
-                    Log.d(TAG, "  Colors: ${characteristics.dominantColors}")
+                    Log.d(TAG, " Freshness Score: ${freshnessResult.freshnessScore}%")
+                    Log.d(TAG, " Size: ${characteristics.estimatedSize}")
+                    Log.d(TAG, " Colors: ${characteristics.dominantColors}")
 
-                    // ✅ Display freshness status card
                     displayFreshnessCard(freshnessResult)
-
-                    // ✅ NEW: Update detailed info with accurate description
                     displayAccurateDescription(characteristics)
 
-                    // Get predictions with freshness multiplier
                     val predictions = ShelfLifePredictor.getAllStoragePredictions(
                         className,
                         freshnessResult.shelfLifeMultiplier
                     )
 
-                    // Clear and add storage rows
                     binding.layoutStorageRows.removeAllViews()
                     predictions.forEach { prediction ->
                         addStorageRow(prediction)
                     }
                 } else {
                     Log.w(TAG, "⚠️ Could not analyze, using default")
+
                     binding.cardFreshness.visibility = View.GONE
                     val predictions = ShelfLifePredictor.getAllStoragePredictions(className)
+
                     binding.layoutStorageRows.removeAllViews()
                     predictions.forEach { prediction ->
                         addStorageRow(prediction)
                     }
                 }
             }
-
         } catch (ex: Exception) {
             Log.e(TAG, "❌ Failed to display storage predictions", ex)
             binding.cardStoragePredictions.visibility = View.GONE
@@ -308,80 +304,96 @@ class ResultActivity : AppCompatActivity() {
 
     /**
      * ✅ Display freshness analysis in dedicated card (Dynamic with proper formatting)
+     *
+     * IMPORTANT FIX:
+     * Convert scores to Int before getString(...) formatting to avoid runtime format crashes.
      */
-    private fun displayFreshnessCard(freshnessResult: com.example.mushroom_grader.ml.FreshnessAnalysisResult) {
-        // Show freshness card
+    private fun displayFreshnessCard(
+        freshnessResult: com.example.mushroom_grader.ml.FreshnessAnalysisResult
+    ) {
         binding.cardFreshness.visibility = View.VISIBLE
 
-        // Set freshness score
-        binding.tvFreshnessScore.text = getString(R.string.percentage_format, freshnessResult.freshnessScore)
+        val freshnessScoreInt = freshnessResult.freshnessScore.coerceIn(0, 100)
 
-        // Set freshness status
+        binding.tvFreshnessScore.text =
+            getString(R.string.percentage_format, freshnessScoreInt)
+
         binding.tvFreshnessStatus.text = freshnessResult.status
 
-        // Set progress bar
-        binding.progressFreshness.progress = freshnessResult.freshnessScore
+        binding.progressFreshness.progress = freshnessScoreInt
 
-        // Color code based on freshness score
         val (progressColor, textColor) = when {
-            freshnessResult.freshnessScore >= 85 -> {
-                Pair(android.R.color.holo_green_dark, android.R.color.holo_green_dark)
-            }
-            freshnessResult.freshnessScore >= 70 -> {
-                Pair(android.R.color.holo_green_light, android.R.color.holo_green_light)
-            }
-            freshnessResult.freshnessScore >= 50 -> {
-                Pair(android.R.color.holo_orange_light, android.R.color.holo_orange_dark)
-            }
-            freshnessResult.freshnessScore >= 30 -> {
-                Pair(android.R.color.holo_orange_dark, android.R.color.holo_red_dark)
-            }
-            else -> {
-                Pair(android.R.color.holo_red_dark, android.R.color.holo_red_dark)
-            }
+            freshnessScoreInt >= 85 -> Pair(
+                android.R.color.holo_green_dark,
+                android.R.color.holo_green_dark
+            )
+
+            freshnessScoreInt >= 70 -> Pair(
+                android.R.color.holo_green_light,
+                android.R.color.holo_green_light
+            )
+
+            freshnessScoreInt >= 50 -> Pair(
+                android.R.color.holo_orange_light,
+                android.R.color.holo_orange_dark
+            )
+
+            freshnessScoreInt >= 30 -> Pair(
+                android.R.color.holo_orange_dark,
+                android.R.color.holo_red_dark
+            )
+
+            else -> Pair(
+                android.R.color.holo_red_dark,
+                android.R.color.holo_red_dark
+            )
         }
 
         binding.progressFreshness.progressTintList =
             ContextCompat.getColorStateList(this, progressColor)
-        binding.tvFreshnessScore.setTextColor(
-            ContextCompat.getColor(this, textColor)
-        )
-        binding.tvFreshnessStatus.setTextColor(
-            ContextCompat.getColor(this, textColor)
-        )
 
-        // Show detailed analysis on button click
+        binding.tvFreshnessScore.setTextColor(ContextCompat.getColor(this, textColor))
+        binding.tvFreshnessStatus.setTextColor(ContextCompat.getColor(this, textColor))
+
         binding.btnFreshnessDetails.setOnClickListener {
             showFreshnessDetailsDialog(freshnessResult)
         }
 
-        // ✅ Update storage title dynamically with proper string formatting
         val dynamicTitle = buildString {
             append(getString(R.string.shelf_life_by_storage))
             append("\n")
-            append(getString(R.string.current_freshness_format, freshnessResult.freshnessScore, freshnessResult.status))
+            // FIX: ensure score is Int for %d placeholder (if your string uses %d).
+            append(getString(R.string.current_freshness_format, freshnessScoreInt, freshnessResult.status))
         }
-        binding.tvStoragePredictionsTitle.text = dynamicTitle
 
-        Log.d(TAG, "✅ Freshness card displayed: ${freshnessResult.freshnessScore}%")
+        binding.tvStoragePredictionsTitle.text = dynamicTitle
+        Log.d(TAG, "✅ Freshness card displayed: ${freshnessScoreInt}%")
     }
 
     /**
      * ✅ Show detailed freshness analysis dialog
      */
-    private fun showFreshnessDetailsDialog(freshnessResult: com.example.mushroom_grader.ml.FreshnessAnalysisResult) {
+    private fun showFreshnessDetailsDialog(
+        freshnessResult: com.example.mushroom_grader.ml.FreshnessAnalysisResult
+    ) {
+        // FIX: convert to Int in case your string resources use %d
+        val colorScoreInt = freshnessResult.colorScore.coerceIn(0, 100)
+        val browningScoreInt = freshnessResult.browningScore.coerceIn(0, 100)
+        val spotScoreInt = freshnessResult.spotScore.coerceIn(0, 100)
+        val textureScoreInt = freshnessResult.textureScore.coerceIn(0, 100)
+
         val message = buildString {
             append(freshnessResult.details)
             append("\n\n")
             append(getString(R.string.component_scores))
             append("\n")
-            append(getString(R.string.color_vibrancy_format, freshnessResult.colorScore))
+            append(getString(R.string.color_vibrancy_format, colorScoreInt))
             append("\n")
-            append(getString(R.string.browning_level_format, freshnessResult.browningScore))
+            append(getString(R.string.browning_level_format, browningScoreInt))
             append("\n")
-            append(getString(R.string.spotting_format, freshnessResult.spotScore))
+            append(getString(R.string.spotting_format, spotScoreInt))
             append("\n")
-            append(getString(R.string.texture_quality_format, freshnessResult.textureScore))
+            append(getString(R.string.texture_quality_format, textureScoreInt))
             append("\n\n")
             append(getString(R.string.freshness_affects_shelf_life))
         }
@@ -396,18 +408,17 @@ class ResultActivity : AppCompatActivity() {
     /**
      * ✅ NEW: Display accurate description based on actual image characteristics
      */
-    private fun displayAccurateDescription(characteristics: com.example.mushroom_grader.ml.MushroomCharacteristics) {
-        // Save for later use in "More Info" dialog
+    private fun displayAccurateDescription(
+        characteristics: com.example.mushroom_grader.ml.MushroomCharacteristics
+    ) {
         currentCharacteristics = characteristics
 
-        // Update the detailed info card with accurate, image-based description
         binding.tvDetailedInfo.text = buildString {
             append(characteristics.description)
             append("\n\n")
             append("📏 Size: ${characteristics.estimatedSize}\n")
             append("🎨 Colors: ${characteristics.dominantColors.joinToString(", ")}\n")
             append("✨ Surface: ${characteristics.surfaceCondition}")
-
             if (characteristics.visualDefects.isNotEmpty()) {
                 append("\n⚠️ Notes: ${characteristics.visualDefects.joinToString(", ")}")
             }
@@ -426,10 +437,8 @@ class ResultActivity : AppCompatActivity() {
             false
         )
 
-        // Get icon for storage method
         val icon = getStorageMethodIcon(prediction.storageMethod.name)
 
-        // Set method name with icon
         val methodNameView = rowView.findViewById<TextView>(R.id.textStorageMethodName)
         methodNameView.text = getString(
             R.string.storage_method_format,
@@ -437,22 +446,18 @@ class ResultActivity : AppCompatActivity() {
             prediction.storageMethod.displayName
         )
 
-        // Set shelf life days with color coding
         val daysView = rowView.findViewById<TextView>(R.id.textStorageDays)
         daysView.text = getString(R.string.days_format, prediction.calculatedDays)
 
-        // Color code based on duration
         val color = getShelfLifeColor(prediction.calculatedDays)
         daysView.setTextColor(ContextCompat.getColor(this, color))
 
-        // Set freshness status indicator bar
         val freshnessIndicator = rowView.findViewById<View>(R.id.viewFreshnessIndicator)
         val freshnessStatus = prediction.getFreshnessStatus()
         freshnessIndicator.setBackgroundColor(
             ContextCompat.getColor(this, freshnessStatus.color)
         )
 
-        // Click to show detailed info
         rowView.setOnClickListener {
             showDetailedStorageInfo(prediction)
         }
@@ -509,7 +514,6 @@ class ResultActivity : AppCompatActivity() {
             append(getString(R.string.storage_method_header, prediction.storageMethod.displayName))
             append("\n\n")
 
-            // Freshness status
             append(getString(R.string.freshness_label, freshnessStatus.message))
             append("\n")
             append(getString(R.string.days_remaining_label, daysRemaining))
@@ -541,25 +545,11 @@ class ResultActivity : AppCompatActivity() {
      * Setup all button click listeners
      */
     private fun setupClickListeners() {
-        binding.btnShare.setOnClickListener {
-            shareResult()
-        }
-
-        binding.btnTakeAnother.setOnClickListener {
-            navigateToCameraActivity()
-        }
-
-        binding.btnViewHistory.setOnClickListener {
-            navigateToHistoryActivity()
-        }
-
-        binding.btnBackHome.setOnClickListener {
-            navigateToMainActivity()
-        }
-
-        binding.btnMoreInfo.setOnClickListener {
-            showMoreInfoDialog()
-        }
+        binding.btnShare.setOnClickListener { shareResult() }
+        binding.btnTakeAnother.setOnClickListener { navigateToCameraActivity() }
+        binding.btnViewHistory.setOnClickListener { navigateToHistoryActivity() }
+        binding.btnBackHome.setOnClickListener { navigateToMainActivity() }
+        binding.btnMoreInfo.setOnClickListener { showMoreInfoDialog() }
     }
 
     /**
@@ -567,7 +557,6 @@ class ResultActivity : AppCompatActivity() {
      */
     private fun shareResult() {
         val shareText = buildShareMessage()
-
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
             putExtra(Intent.EXTRA_TEXT, shareText)
@@ -587,7 +576,7 @@ class ResultActivity : AppCompatActivity() {
             append(getString(R.string.share_species, className))
             append("\n")
 
-            val confidencePercent = String.format(Locale.getDefault(), "%.2f%%", confidence * 100)
+            val confidencePercent = String.format(Locale.getDefault(), "%.2f%%", confidence * 100f)
             append(getString(R.string.share_confidence, confidencePercent))
             append("\n")
 
@@ -596,7 +585,6 @@ class ResultActivity : AppCompatActivity() {
             } else {
                 getString(R.string.safe_to_eat)
             }
-
             append(getString(R.string.share_safety, safetyText))
             append("\n")
 
@@ -642,7 +630,6 @@ class ResultActivity : AppCompatActivity() {
      */
     private fun showMoreInfoDialog() {
         val message = mlModelHelper.getMushroomInfo(classId, currentCharacteristics)
-
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.detailed_information)
             .setMessage(message)
@@ -655,9 +642,11 @@ class ResultActivity : AppCompatActivity() {
      */
     private fun saveToDatabase() {
         Log.d(TAG, "saveToDatabase called")
+
         lifecycleScope.launch {
             try {
                 Log.d(TAG, "Creating ClassificationResult object...")
+
                 withContext(Dispatchers.IO) {
                     val result = ClassificationResult(
                         className = className,
@@ -666,12 +655,13 @@ class ResultActivity : AppCompatActivity() {
                         isPoisonous = isPoisonous,
                         category = try {
                             MushroomCategory.valueOf(category)
-                        } catch (e: Exception) {
+                        } catch (_: Exception) {
                             MushroomCategory.UNKNOWN
                         },
                         grade = grade,
                         imagePath = imagePath
                     )
+
                     Log.d(TAG, "Result object created: $className")
 
                     val database = AppDatabase.getDatabase(applicationContext)
@@ -680,7 +670,6 @@ class ResultActivity : AppCompatActivity() {
                     val rowId = database.resultDao().insertResult(result)
                     Log.d(TAG, "✅ SAVED to database! Row ID: $rowId")
 
-                    // Show success toast
                     withContext(Dispatchers.Main) {
                         Toast.makeText(
                             this@ResultActivity,
@@ -693,7 +682,6 @@ class ResultActivity : AppCompatActivity() {
                 Log.e(TAG, "❌ FAILED to save to database!", ex)
                 Log.e(TAG, "Error: ${ex.message}")
 
-                // Show error toast
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         this@ResultActivity,

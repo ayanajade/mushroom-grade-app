@@ -1,133 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Background - camera viewfinder -->
+
+    <!-- Dark camera background with vignette -->
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#212121" />
+            <solid android:color="#0B1220"/>
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="220dp"
+                android:centerX="50%"
+                android:centerY="50%"
+                android:startColor="#00000000"
+                android:endColor="#40000000"/>
         </shape>
     </item>
 
-    <!-- Mushroom (centered) -->
-    <item
-        android:width="80dp"
-        android:height="50dp"
-        android:gravity="center">
+    <!-- Mushroom shadow -->
+    <item android:width="140dp" android:height="22dp" android:gravity="center" android:top="70dp">
         <shape android:shape="oval">
-            <solid android:color="#D2691E" />
+            <gradient android:type="radial" android:gradientRadius="90dp" android:startColor="#24000000" android:endColor="#00000000"/>
         </shape>
     </item>
 
-    <item
-        android:width="50dp"
-        android:height="50dp"
-        android:gravity="center"
-        android:top="20dp">
+    <!-- Stem -->
+    <item android:width="34dp" android:height="44dp" android:gravity="center" android:top="54dp">
+        <shape android:shape="rectangle">
+            <gradient android:angle="0" android:startColor="#FFF3E7D3" android:endColor="#FFE6D4B8"/>
+            <corners android:radius="18dp"/>
+        </shape>
+    </item>
+
+    <!-- Cap -->
+    <item android:width="114dp" android:height="66dp" android:gravity="center" android:top="16dp">
         <shape android:shape="oval">
-            <solid android:color="#8B4513" />
+            <gradient android:angle="90" android:startColor="#FFF59E0B" android:endColor="#FFD97706"/>
+        </shape>
+    </item>
+    <item android:width="84dp" android:height="38dp" android:gravity="center" android:top="26dp" android:left="12dp">
+        <shape android:shape="oval">
+            <gradient android:angle="90" android:startColor="#30FFFFFF" android:endColor="#00FFFFFF"/>
         </shape>
     </item>
 
-    <!-- Focus frame outer -->
-    <item
-        android:width="120dp"
-        android:height="120dp"
-        android:gravity="center">
+    <!-- Focus glow (outer) -->
+    <item android:width="150dp" android:height="150dp" android:gravity="center">
         <shape android:shape="rectangle">
-            <stroke android:width="3dp" android:color="#4CAF50" />
-            <solid android:color="#00000000" />
-            <corners android:radius="4dp" />
+            <stroke android:width="6dp" android:color="#3322C55E"/>
+            <solid android:color="#00000000"/>
+            <corners android:radius="22dp"/>
         </shape>
     </item>
 
-    <!-- Focus corners - top left -->
-    <item
-        android:width="20dp"
-        android:height="3dp"
-        android:gravity="center"
-        android:left="-50dp"
-        android:top="-58dp">
+    <!-- Focus frame -->
+    <item android:width="132dp" android:height="132dp" android:gravity="center">
         <shape android:shape="rectangle">
-            <solid android:color="#4CAF50" />
+            <stroke android:width="2dp" android:color="#22C55E"/>
+            <solid android:color="#00000000"/>
+            <corners android:radius="18dp"/>
         </shape>
     </item>
 
-    <item
-        android:width="3dp"
-        android:height="20dp"
-        android:gravity="center"
-        android:left="-58dp"
-        android:top="-50dp">
-        <shape android:shape="rectangle">
-            <solid android:color="#4CAF50" />
+    <!-- Tap point -->
+    <item android:width="10dp" android:height="10dp" android:gravity="center" android:top="-12dp">
+        <shape android:shape="oval"><solid android:color="#22C55E"/></shape>
+    </item>
+    <item android:width="34dp" android:height="34dp" android:gravity="center" android:top="-12dp">
+        <shape android:shape="oval">
+            <stroke android:width="2dp" android:color="#6622C55E"/>
+            <solid android:color="#00000000"/>
         </shape>
     </item>
 
-    <!-- Focus corners - top right -->
-    <item
-        android:width="20dp"
-        android:height="3dp"
-        android:gravity="center"
-        android:left="50dp"
-        android:top="-58dp">
-        <shape android:shape="rectangle">
-            <solid android:color="#4CAF50" />
-        </shape>
-    </item>
-
-    <item
-        android:width="3dp"
-        android:height="20dp"
-        android:gravity="center"
-        android:left="58dp"
-        android:top="-50dp">
-        <shape android:shape="rectangle">
-            <solid android:color="#4CAF50" />
-        </shape>
-    </item>
-
-    <!-- Focus corners - bottom left -->
-    <item
-        android:width="20dp"
-        android:height="3dp"
-        android:gravity="center"
-        android:left="-50dp"
-        android:top="58dp">
-        <shape android:shape="rectangle">
-            <solid android:color="#4CAF50" />
-        </shape>
-    </item>
-
-    <item
-        android:width="3dp"
-        android:height="20dp"
-        android:gravity="center"
-        android:left="-58dp"
-        android:top="50dp">
-        <shape android:shape="rectangle">
-            <solid android:color="#4CAF50" />
-        </shape>
-    </item>
-
-    <!-- Focus corners - bottom right -->
-    <item
-        android:width="20dp"
-        android:height="3dp"
-        android:gravity="center"
-        android:left="50dp"
-        android:top="58dp">
-        <shape android:shape="rectangle">
-            <solid android:color="#4CAF50" />
-        </shape>
-    </item>
-
-    <item
-        android:width="3dp"
-        android:height="20dp"
-        android:gravity="center"
-        android:left="58dp"
-        android:top="50dp">
-        <shape android:shape="rectangle">
-            <solid android:color="#4CAF50" />
-        </shape>
-    </item>
 </layer-list>

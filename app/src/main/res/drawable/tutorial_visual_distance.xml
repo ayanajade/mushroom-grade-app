@@ -1,76 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Background -->
+
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#F5F5F5" />
+            <solid android:color="#F8FAFC"/>
         </shape>
     </item>
 
-    <!-- Phone (top) -->
-    <item
-        android:width="60dp"
-        android:height="100dp"
-        android:gravity="top|center_horizontal"
-        android:top="10dp">
-        <shape android:shape="rectangle">
-            <solid android:color="#212121" />
-            <corners android:radius="8dp" />
-        </shape>
-    </item>
-
-    <!-- Phone screen -->
-    <item
-        android:width="50dp"
-        android:height="85dp"
-        android:gravity="top|center_horizontal"
-        android:top="17dp">
-        <shape android:shape="rectangle">
-            <solid android:color="#64B5F6" />
-            <corners android:radius="4dp" />
-        </shape>
-    </item>
-
-    <!-- Distance arrow down -->
-    <item
-        android:width="3dp"
-        android:height="60dp"
-        android:gravity="center_horizontal"
-        android:top="115dp">
-        <shape android:shape="rectangle">
-            <solid android:color="#4CAF50" />
-        </shape>
-    </item>
-
-    <!-- Distance text background -->
-    <item
-        android:width="80dp"
-        android:height="30dp"
-        android:gravity="center">
-        <shape android:shape="rectangle">
-            <solid android:color="#4CAF50" />
-            <corners android:radius="15dp" />
-        </shape>
-    </item>
-
-    <!-- Mushroom (bottom) -->
-    <item
-        android:width="50dp"
-        android:height="30dp"
-        android:gravity="bottom|center_horizontal"
-        android:bottom="20dp">
+    <!-- Phone shadow -->
+    <item android:width="92dp" android:height="18dp" android:gravity="top|center_horizontal" android:top="132dp">
         <shape android:shape="oval">
-            <solid android:color="#D2691E" />
+            <gradient android:type="radial" android:gradientRadius="60dp" android:startColor="#240F172A" android:endColor="#000F172A"/>
         </shape>
     </item>
 
-    <item
-        android:width="30dp"
-        android:height="30dp"
-        android:gravity="bottom|center_horizontal"
-        android:bottom="10dp">
-        <shape android:shape="oval">
-            <solid android:color="#8B4513" />
+    <!-- Phone body (3D) -->
+    <item android:width="76dp" android:height="124dp" android:gravity="top|center_horizontal" android:top="14dp">
+        <shape android:shape="rectangle">
+            <gradient android:angle="0" android:startColor="#FF1F2937" android:endColor="#FF0B1220"/>
+            <corners android:radius="20dp"/>
         </shape>
     </item>
+
+    <!-- Side highlight -->
+    <item android:width="8dp" android:height="118dp" android:gravity="top|center_horizontal" android:top="17dp" android:left="-28dp">
+        <shape android:shape="rectangle">
+            <gradient android:angle="0" android:startColor="#33FFFFFF" android:endColor="#00FFFFFF"/>
+            <corners android:radius="6dp"/>
+        </shape>
+    </item>
+
+    <!-- Screen -->
+    <item android:width="64dp" android:height="108dp" android:gravity="top|center_horizontal" android:top="22dp">
+        <shape android:shape="rectangle">
+            <gradient android:angle="90" android:startColor="#FFA7C7FF" android:endColor="#FF60A5FA"/>
+            <corners android:radius="16dp"/>
+        </shape>
+    </item>
+
+    <!-- Distance line with gradient -->
+    <item android:width="4dp" android:height="72dp" android:gravity="center_horizontal" android:top="142dp">
+        <shape android:shape="rectangle">
+            <gradient android:angle="90" android:startColor="#22C55E" android:endColor="#16A34A"/>
+            <corners android:radius="2dp"/>
+        </shape>
+    </item>
+
+    <!-- End dots -->
+    <item android:width="10dp" android:height="10dp" android:gravity="center_horizontal" android:top="138dp">
+        <shape android:shape="oval"><solid android:color="#16A34A"/></shape>
+    </item>
+    <item android:width="10dp" android:height="10dp" android:gravity="center_horizontal" android:top="208dp">
+        <shape android:shape="oval"><solid android:color="#16A34A"/></shape>
+    </item>
+
+    <!-- Mushroom shadow -->
+    <item android:width="140dp" android:height="22dp" android:gravity="bottom|center_horizontal" android:bottom="20dp">
+        <shape android:shape="oval">
+            <gradient android:type="radial" android:gradientRadius="90dp" android:startColor="#240F172A" android:endColor="#000F172A"/>
+        </shape>
+    </item>
+
+    <!-- Stem -->
+    <item android:width="36dp" android:height="48dp" android:gravity="bottom|center_horizontal" android:bottom="26dp">
+        <shape android:shape="rectangle">
+            <gradient android:angle="0" android:startColor="#FFF3E7D3" android:endColor="#FFE6D4B8"/>
+            <corners android:radius="18dp"/>
+        </shape>
+    </item>
+
+    <!-- Cap -->
+    <item android:width="118dp" android:height="70dp" android:gravity="bottom|center_horizontal" android:bottom="54dp">
+        <shape android:shape="oval">
+            <gradient android:angle="90" android:startColor="#FFF59E0B" android:endColor="#FFD97706"/>
+        </shape>
+    </item>
+
+    <!-- Cap highlight -->
+    <item android:width="86dp" android:height="40dp" android:gravity="bottom|center_horizontal" android:bottom="72dp" android:left="14dp">
+        <shape android:shape="oval">
+            <gradient android:angle="90" android:startColor="#30FFFFFF" android:endColor="#00FFFFFF"/>
+        </shape>
+    </item>
+
 </layer-list>

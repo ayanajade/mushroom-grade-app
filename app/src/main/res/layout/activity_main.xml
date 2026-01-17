@@ -5,364 +5,459 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
+    android:background="@drawable/bg_home_screen"
     android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
-    <!-- App Bar with gradient background matching history screen -->
+    <!-- HEADER -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
         android:fitsSystemWindows="true">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@drawable/toolbar_gradient_background"
-            app:title="@string/app_name"
-            app:titleTextColor="@android:color/white"
-            app:titleCentered="true" />
+            android:layout_height="wrap_content"
+            android:minHeight="90dp"
+            android:background="@drawable/bg_toolbar_welcome"
+            app:contentInsetLeft="0dp"
+            app:contentInsetRight="0dp"
+            app:contentInsetStart="0dp"
+            app:contentInsetStartWithNavigation="0dp"
+            app:title=""
+            app:subtitle="">
 
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="96dp"
+                android:paddingStart="28dp"
+                android:paddingTop="18dp"
+                android:paddingEnd="13dp"
+                android:paddingBottom="1dp">
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/imgToolbarLogo"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@android:color/white"
+                    android:contentDescription="@string/app_name"
+                    android:padding="3dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/mycograde_logo"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.MycoGrade.Circle"
+                    app:strokeColor="#E7EAF0"
+                    app:strokeWidth="1dp" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvToolbarTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:text="@string/welcome_to_mushroom_grader"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/imgToolbarLogo"
+                    app:layout_constraintTop_toTopOf="@id/imgToolbarLogo" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvToolbarSubtitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginTop="2dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="@string/identify_and_grade_mushrooms_using_ai"
+                    android:textColor="#EAF0FF"
+                    android:textSize="12sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/imgToolbarLogo"
+                    app:layout_constraintTop_toBottomOf="@id/tvToolbarTitle" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </com.google.android.material.appbar.MaterialToolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Main Content -->
+    <!-- CONTENT -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:paddingBottom="28dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingStart="16dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="16dp">
 
-            <!-- Header Section with consistent card styling -->
+            <!-- INTRO CAROUSEL -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/introCarouselCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
-                app:cardElevation="4dp"
                 app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="16dp">
+                app:cardCornerRadius="18dp"
+                app:cardElevation="6dp"
+                app:cardUseCompatPadding="true">
 
-                <LinearLayout
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="24dp"
-                    android:gravity="center">
+                    android:layout_height="280dp">
 
-                    <!-- App Icon/Logo -->
+                    <androidx.viewpager2.widget.ViewPager2
+                        android:id="@+id/introViewPager"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:overScrollMode="never" />
+
+                    <!-- Left chevron -->
                     <ImageView
-                        android:layout_width="88dp"
-                        android:layout_height="88dp"
-                        android:layout_marginBottom="16dp"
-                        android:src="@mipmap/ic_launcher"
-                        android:contentDescription="@string/app_name" />
+                        android:id="@+id/btnPrev"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center_vertical|start"
+                        android:layout_marginStart="12dp"
+                        android:background="@drawable/bg_carousel_nav_circle"
+                        android:contentDescription="@string/previous"
+                        android:padding="10dp"
+                        android:rotation="180"
+                        android:src="@drawable/ic_chevron_right_24"
+                        app:tint="@android:color/white" />
 
-                    <!-- Welcome Text -->
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvWelcome"
+                    <!-- Right chevron -->
+                    <ImageView
+                        android:id="@+id/btnNext"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center_vertical|end"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/bg_carousel_nav_circle"
+                        android:contentDescription="@string/next"
+                        android:padding="10dp"
+                        android:src="@drawable/ic_chevron_right_24"
+                        app:tint="@android:color/white" />
+
+                    <!-- Dots (do NOT use tabBackground here; dots will be custom views) -->
+                    <com.google.android.material.tabs.TabLayout
+                        android:id="@+id/introIndicator"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/welcome_title"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
-                        android:textColor="#424242"
-                        android:textAlignment="center"
-                        android:layout_marginBottom="8dp" />
-
-                    <!-- Description Text -->
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvDescription"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/welcome_description"
-                        android:textSize="14sp"
-                        android:textAlignment="center"
-                        android:textColor="#757575" />
-
-                </LinearLayout>
+                        android:layout_height="24dp"
+                        android:layout_gravity="bottom|center_horizontal"
+                        android:layout_marginBottom="10dp"
+                        android:background="@android:color/transparent"
+                        app:tabIndicator="@null"
+                        app:tabIndicatorHeight="0dp"
+                        app:tabRippleColor="@null"
+                        app:tabPadding="0dp"
+                        app:tabMinWidth="0dp"
+                        app:tabMaxWidth="0dp"
+                        app:tabGravity="center"
+                        app:tabMode="fixed" />
+                </FrameLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Section header with consistent styling -->
+            <!-- Get Started -->
             <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvWelcome"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/get_started"
-                android:textSize="16sp"
+                android:textColor="#111827"
+                android:textSize="14sp"
                 android:textStyle="bold"
-                android:textColor="#424242"
-                android:layout_marginBottom="12dp"
-                android:layout_marginStart="4dp" />
+                tools:ignore="DuplicateIds" />
 
-            <!-- Camera Button with consistent card styling -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/scan_with_camera_or_choose_a_photo"
+                android:textColor="#6B7280"
+                android:textSize="13sp"
+                tools:ignore="DuplicateIds" />
+
+            <!-- Camera -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btnCamera"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
                 android:layout_marginBottom="12dp"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="16dp"
-                app:rippleColor="#E8F5E9">
+                app:cardBackgroundColor="@android:color/transparent"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="2dp"
+                app:rippleColor="#1A16A34A"
+                app:strokeColor="#EEF0F4"
+                app:strokeWidth="1dp">
 
-                <LinearLayout
+                <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
-
-                    <!-- Icon container with green background -->
-                    <FrameLayout
-                        android:layout_width="52dp"
-                        android:layout_height="52dp"
-                        android:background="@drawable/icon_background_green">
-
-                        <ImageView
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
-                            android:layout_gravity="center"
-                            android:src="@android:drawable/ic_menu_camera"
-                            app:tint="@android:color/white"
-                            android:contentDescription="@string/camera" />
-
-                    </FrameLayout>
+                    android:background="@drawable/bg_action_card_green"
+                    android:padding="16dp">
 
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="16dp">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        tools:ignore="UselessParent">
 
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="wrap_content"
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_icon_soft_green">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:contentDescription="@string/camera"
+                                android:src="@android:drawable/ic_menu_camera"
+                                app:tint="#14532D" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="@string/take_photo"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:textColor="#424242" />
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
 
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/capture_mushroom"
-                            android:textSize="13sp"
-                            android:textColor="#9E9E9E"
-                            android:layout_marginTop="2dp" />
+                            <com.google.android.material.textview.MaterialTextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/take_photo"
+                                android:textColor="#0B1220"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
 
+                            <com.google.android.material.textview.MaterialTextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="@string/capture_mushroom"
+                                android:textColor="#334155"
+                                android:textSize="13sp" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:contentDescription="@string/open"
+                            android:src="@drawable/ic_chevron_right_24"
+                            app:tint="#334155" />
                     </LinearLayout>
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@android:drawable/ic_media_play"
-                        app:tint="#BDBDBD"
-                        android:contentDescription="@string/open" />
-
-                </LinearLayout>
-
+                </FrameLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Gallery Button with consistent card styling -->
+            <!-- Gallery -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btnGallery"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
+                android:layout_marginBottom="18dp"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="16dp"
-                app:rippleColor="#E3F2FD">
+                app:cardBackgroundColor="@android:color/transparent"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="2dp"
+                app:rippleColor="#1A2563EB"
+                app:strokeColor="#EEF0F4"
+                app:strokeWidth="1dp">
 
-                <LinearLayout
+                <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
-
-                    <!-- Icon container with purple background -->
-                    <FrameLayout
-                        android:layout_width="52dp"
-                        android:layout_height="52dp"
-                        android:background="@drawable/icon_background_purple">
-
-                        <ImageView
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
-                            android:layout_gravity="center"
-                            android:src="@android:drawable/ic_menu_gallery"
-                            app:tint="@android:color/white"
-                            android:contentDescription="@string/gallery" />
-
-                    </FrameLayout>
+                    android:background="@drawable/bg_action_card_blue"
+                    android:padding="16dp">
 
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="16dp">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        tools:ignore="UselessParent">
 
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="wrap_content"
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_icon_soft_blue">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:contentDescription="@string/gallery"
+                                android:src="@android:drawable/ic_menu_gallery"
+                                app:tint="#1E3A8A" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="@string/choose_gallery"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:textColor="#424242" />
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
 
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/select_existing"
-                            android:textSize="13sp"
-                            android:textColor="#9E9E9E"
-                            android:layout_marginTop="2dp" />
+                            <com.google.android.material.textview.MaterialTextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/choose_gallery"
+                                android:textColor="#0B1220"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
 
+                            <com.google.android.material.textview.MaterialTextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="@string/select_existing"
+                                android:textColor="#334155"
+                                android:textSize="13sp" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:contentDescription="@string/open"
+                            android:src="@drawable/ic_chevron_right_24"
+                            app:tint="#334155" />
                     </LinearLayout>
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@android:drawable/ic_media_play"
-                        app:tint="#BDBDBD"
-                        android:contentDescription="@string/open" />
-
-                </LinearLayout>
-
+                </FrameLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Section header with consistent styling -->
             <com.google.android.material.textview.MaterialTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/more_options"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="#424242"
                 android:layout_marginBottom="12dp"
-                android:layout_marginStart="4dp" />
+                android:text="@string/more_options"
+                android:textColor="#111827"
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
-            <!-- History and About buttons in a horizontal row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <!-- History Button -->
+                <!-- History -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/btnHistory"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="112dp"
+                    android:layout_marginEnd="8dp"
                     android:layout_weight="1"
-                    android:layout_marginEnd="6dp"
                     android:clickable="true"
                     android:focusable="true"
-                    app:cardElevation="4dp"
-                    app:cardBackgroundColor="@android:color/white"
-                    app:cardCornerRadius="16dp"
-                    app:rippleColor="#FFF3E0">
+                    app:cardBackgroundColor="@android:color/transparent"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="#EEF0F4"
+                    app:strokeWidth="1dp">
 
-                    <LinearLayout
+                    <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp"
-                        android:gravity="center">
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_action_tile_orange">
 
-                        <FrameLayout
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:background="@drawable/icon_background_orange">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="14dp">
 
                             <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:layout_gravity="center"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
+                                android:contentDescription="@string/history"
                                 android:src="@android:drawable/ic_menu_recent_history"
-                                app:tint="@android:color/white"
-                                android:contentDescription="@string/history" />
+                                app:tint="#9A3412" />
 
-                        </FrameLayout>
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/view_history"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            android:textColor="#424242"
-                            android:layout_marginTop="12dp" />
-
-                    </LinearLayout>
-
+                            <com.google.android.material.textview.MaterialTextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:text="@string/view_history"
+                                android:textColor="#111827"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </FrameLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- About Button -->
+                <!-- About -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/btnAbout"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="112dp"
+                    android:layout_marginStart="8dp"
                     android:layout_weight="1"
-                    android:layout_marginStart="6dp"
                     android:clickable="true"
                     android:focusable="true"
-                    app:cardElevation="4dp"
-                    app:cardBackgroundColor="@android:color/white"
-                    app:cardCornerRadius="16dp"
-                    app:rippleColor="#E3F2FD">
+                    app:cardBackgroundColor="@android:color/transparent"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="#EEF0F4"
+                    app:strokeWidth="1dp">
 
-                    <LinearLayout
+                    <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp"
-                        android:gravity="center">
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_action_tile_cyan">
 
-                        <FrameLayout
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:background="@drawable/icon_background_blue">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="14dp">
 
                             <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:layout_gravity="center"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
+                                android:contentDescription="@string/about"
                                 android:src="@android:drawable/ic_menu_info_details"
-                                app:tint="@android:color/white"
-                                android:contentDescription="@string/about" />
+                                app:tint="#0E7490" />
 
-                        </FrameLayout>
-
-                        <com.google.android.material.textview.MaterialTextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/about"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            android:textColor="#424242"
-                            android:layout_marginTop="12dp" />
-
-                    </LinearLayout>
-
+                            <com.google.android.material.textview.MaterialTextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:text="@string/about"
+                                android:textColor="#111827"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </FrameLayout>
                 </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
 
         </LinearLayout>
-
     </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

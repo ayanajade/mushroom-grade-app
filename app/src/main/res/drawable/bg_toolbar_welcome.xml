@@ -1,0 +1,33 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Base gradient -->
+    <item>
+        <shape>
+            <gradient
+                android:angle="135"
+                android:startColor="#2E6EDC"
+                android:centerColor="#6D4BC7"
+                android:endColor="#4B2A91"/>
+        </shape>
+    </item>
+
+    <!-- Smaller, softer blobs (reduced sizes + opacity) -->
+    <item
+        android:right="-40dp"
+        android:top="-35dp">
+        <shape android:shape="oval">
+            <size android:width="70dp" android:height="70dp"/>
+            <solid android:color="#14FFFFFF"/>
+        </shape>
+    </item>
+
+    <item
+        android:left="-70dp"
+        android:bottom="-60dp">
+        <shape android:shape="oval">
+            <size android:width="100dp" android:height="100dp"/>
+            <solid android:color="#10FFFFFF"/>
+        </shape>
+    </item>
+
+</layer-list>

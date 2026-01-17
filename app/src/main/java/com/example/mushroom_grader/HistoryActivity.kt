@@ -13,10 +13,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mushroom_grader.databinding.ActivityHistoryBinding
-import com.example.mushroom_grader.ui.fragments.HistoryAdapter
 import com.example.mushroom_grader.database.AppDatabase
+import com.example.mushroom_grader.databinding.ActivityHistoryBinding
 import com.example.mushroom_grader.ml.ClassificationResult
+import com.example.mushroom_grader.ui.fragments.HistoryAdapter
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
@@ -27,12 +27,15 @@ class HistoryActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHistoryBinding
     private lateinit var adapter: HistoryAdapter
-    private var allResults = mutableListOf<ClassificationResult>()
-    private var currentSortOrder = SortOrder.NEWEST_FIRST
 
-    companion object {
-        private const val TAG = "HistoryActivity"
-    }
+    // Keep ALL results from DB
+    private val allResults = mutableListOf<ClassificationResult>()
+
+    // Keep what is currently displayed (sorted + filtered)
+    private var displayedResults: List<ClassificationResult> = emptyList()
+
+    private var currentSortOrder = SortOrder.NEWEST_FIRST
+    private var currentQuery: String = ""
 
     enum class SortOrder {
         NEWEST_FIRST,
@@ -43,8 +46,13 @@ class HistoryActivity : AppCompatActivity() {
         NAME_ZA
     }
 
+    companion object {
+        private const val TAG = "HistoryActivity"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         Log.d(TAG, "🚀 onCreate started")
         binding = ActivityHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -70,6 +78,7 @@ class HistoryActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         Log.d(TAG, "⚙️ Setting up RecyclerView")
+
         adapter = HistoryAdapter { result ->
             Log.d(TAG, "👆 Item clicked: ${result.className}")
             navigateToResultPage(result)
@@ -86,7 +95,9 @@ class HistoryActivity : AppCompatActivity() {
 
     private fun setupSwipeToDelete() {
         Log.d(TAG, "⚙️ Setting up swipe to delete")
+
         val swipeCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
@@ -95,79 +106,79 @@ class HistoryActivity : AppCompatActivity() {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.bindingAdapterPosition
-                if (position != RecyclerView.NO_POSITION && position < allResults.size) {
-                    val result = allResults[position]
-                    Log.d(TAG, "👈 Swiped to delete: ${result.className} at position $position")
-                    deleteResult(result, position)
+                if (position == RecyclerView.NO_POSITION) return
+
+                if (position >= displayedResults.size) {
+                    // Safety fallback (shouldn't happen, but prevents crashes)
+                    adapter.notifyItemChanged(position)
+                    return
                 }
+
+                val result = displayedResults[position]
+                Log.d(TAG, "👈 Swiped to delete: ${result.className} at position $position")
+                deleteResult(result, position)
             }
         }
+
         ItemTouchHelper(swipeCallback).attachToRecyclerView(binding.rvHistory)
     }
 
     private fun loadHistory() {
         Log.d(TAG, "loadHistory called")
+
         lifecycleScope.launch {
             try {
                 Log.d(TAG, "Fetching from database...")
                 val results = withContext(Dispatchers.IO) {
                     val database = AppDatabase.getDatabase(applicationContext)
-                    Log.d(TAG, "Database instance obtained")
-
-                    val fetchedResults = database.resultDao().getAllResults()
-                    Log.d(TAG, "Database returned ${fetchedResults.size} results")
-                    fetchedResults
+                    database.resultDao().getAllResults()
                 }
 
                 allResults.clear()
                 allResults.addAll(results)
-                Log.d(TAG, "allResults now has ${allResults.size} items")
 
+                Log.d(TAG, "✅ Loaded ${allResults.size} results")
                 displayResults()
+
             } catch (ex: Exception) {
-                Log.e(TAG, "ERROR loading history: ${ex.message}", ex)
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(
-                        this@HistoryActivity,
-                        getString(R.string.error_database),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
+                Log.e(TAG, "❌ ERROR loading history: ${ex.message}", ex)
+
+                Toast.makeText(
+                    this@HistoryActivity,
+                    getString(R.string.error_database),
+                    Toast.LENGTH_LONG
+                ).show()
+
                 showEmptyState()
             }
         }
     }
 
-
     private fun displayResults() {
         Log.d(TAG, "🎨 displayResults() called")
         Log.d(TAG, "📊 allResults.size = ${allResults.size}")
         Log.d(TAG, "📊 currentSortOrder = $currentSortOrder")
+        Log.d(TAG, "🔎 currentQuery = '$currentQuery'")
 
-        val sortedResults = sortResults(allResults, currentSortOrder)
-        Log.d(TAG, "📊 sortedResults.size = ${sortedResults.size}")
+        val baseList = if (currentQuery.isBlank()) {
+            allResults
+        } else {
+            allResults.filter {
+                it.className.contains(currentQuery, ignoreCase = true) ||
+                        (it.grade?.contains(currentQuery, ignoreCase = true) == true)
+            }
+        }
+
+        val sortedResults = sortResults(baseList, currentSortOrder)
+        displayedResults = sortedResults
 
         if (sortedResults.isNotEmpty()) {
-            Log.d(TAG, "✅ sortedResults is NOT empty, displaying...")
-
-            // Log each sorted result
-            sortedResults.forEachIndexed { index, result ->
-                Log.d(TAG, "  📌 Sorted[$index]: ${result.className} (${result.confidence})")
-            }
-
-            // Hide empty state
             binding.emptyStateLayout.visibility = View.GONE
             binding.rvHistory.visibility = View.VISIBLE
 
-            Log.d(TAG, "🔄 Calling adapter.submitList() with ${sortedResults.size} items...")
             adapter.submitList(sortedResults)
-            Log.d(TAG, "✅ adapter.submitList() completed")
-            Log.d(TAG, "📊 adapter.itemCount = ${adapter.itemCount}")
-
-            // Update stats
             updateStats(sortedResults)
         } else {
-            Log.d(TAG, "⚠️ sortedResults is EMPTY!")
             showEmptyState()
         }
     }
@@ -191,9 +202,6 @@ class HistoryActivity : AppCompatActivity() {
         return sorted
     }
 
-    /**
-     * ✅ FIXED: Use string resources with placeholders instead of concatenation
-     */
     private fun updateStats(results: List<ClassificationResult>) {
         Log.d(TAG, "📊 updateStats() with ${results.size} results")
 
@@ -201,30 +209,30 @@ class HistoryActivity : AppCompatActivity() {
         val poisonousCount = results.count { it.isPoisonous }
         val edibleCount = results.count { !it.isPoisonous && it.category.name != "INEDIBLE" }
 
-        Log.d(TAG, "📊 Stats - Total: $totalCount, Poisonous: $poisonousCount, Edible: $edibleCount")
-
-        // ✅ FIXED: Use string resources with format
-        binding.tvTotal.text = getString(R.string.total_count, totalCount)
-        binding.tvPoisonous.text = getString(R.string.poisonous_count, poisonousCount)
-        binding.tvEdible.text = getString(R.string.edible_count, edibleCount)
+        // These TextViews are designed as big numbers in your cards.
+        binding.tvTotal.text = totalCount.toString()
+        binding.tvPoisonous.text = poisonousCount.toString()
+        binding.tvEdible.text = edibleCount.toString()
     }
 
-    /**
-     * ✅ FIXED: Use string resources with placeholders
-     */
     private fun showEmptyState() {
         Log.d(TAG, "📭 showEmptyState() called")
+
         binding.rvHistory.visibility = View.GONE
         binding.emptyStateLayout.visibility = View.VISIBLE
 
-        // Reset stats
-        binding.tvTotal.text = getString(R.string.total_count, 0)
-        binding.tvPoisonous.text = getString(R.string.poisonous_count, 0)
-        binding.tvEdible.text = getString(R.string.edible_count, 0)
+        binding.tvTotal.text = "0"
+        binding.tvPoisonous.text = "0"
+        binding.tvEdible.text = "0"
+
+        // Keep adapter in a clean state
+        displayedResults = emptyList()
+        adapter.submitList(emptyList())
     }
 
     private fun setupClickListeners() {
         Log.d(TAG, "⚙️ Setting up click listeners")
+
         binding.btnClear.setOnClickListener {
             Log.d(TAG, "🗑️ Clear button clicked")
             if (allResults.isNotEmpty()) {
@@ -237,6 +245,7 @@ class HistoryActivity : AppCompatActivity() {
 
     private fun navigateToResultPage(result: ClassificationResult) {
         Log.d(TAG, "🔄 Navigating to result page: ${result.className}")
+
         val intent = Intent(this, ResultActivity::class.java).apply {
             putExtra("className", result.className)
             putExtra("classId", result.classId)
@@ -247,11 +256,13 @@ class HistoryActivity : AppCompatActivity() {
             putExtra("imagePath", result.imagePath)
             putExtra("fromHistory", true)
         }
+
         startActivity(intent)
     }
 
-    private fun deleteResult(result: ClassificationResult, position: Int) {
-        Log.d(TAG, "🗑️ deleteResult() - ${result.className} at position $position")
+    private fun deleteResult(result: ClassificationResult, positionInDisplayed: Int) {
+        Log.d(TAG, "🗑️ deleteResult() - ${result.className} at displayed position $positionInDisplayed")
+
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
@@ -259,15 +270,11 @@ class HistoryActivity : AppCompatActivity() {
                     database.resultDao().deleteResult(result)
                 }
 
-                Log.d(TAG, "✅ Deleted from database")
-                allResults.removeAt(position)
-                adapter.removeItem(position)
+                // Remove from master list by identity (id) to keep correctness after sort/search.
+                allResults.removeAll { it.id == result.id }
 
-                if (allResults.isEmpty()) {
-                    showEmptyState()
-                } else {
-                    updateStats(allResults)
-                }
+                // Update UI by rebuilding list (keeps sorting/search consistent)
+                displayResults()
 
                 Snackbar.make(binding.root, R.string.deleted_successfully, Snackbar.LENGTH_LONG)
                     .setAction(getString(R.string.cancel).uppercase()) {
@@ -278,18 +285,26 @@ class HistoryActivity : AppCompatActivity() {
 
             } catch (ex: Exception) {
                 Log.e(TAG, "❌ Failed to delete", ex)
+
                 Toast.makeText(
                     this@HistoryActivity,
                     R.string.error_database,
                     Toast.LENGTH_SHORT
                 ).show()
-                adapter.notifyItemChanged(position)
+
+                // Restore swiped item visually
+                if (positionInDisplayed in displayedResults.indices) {
+                    adapter.notifyItemChanged(positionInDisplayed)
+                } else {
+                    adapter.notifyDataSetChanged()
+                }
             }
         }
     }
 
     private fun undoDelete(result: ClassificationResult) {
         Log.d(TAG, "↩️ undoDelete() - ${result.className}")
+
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
@@ -297,12 +312,12 @@ class HistoryActivity : AppCompatActivity() {
                     database.resultDao().insertResult(result)
                 }
 
-                Log.d(TAG, "✅ Restored to database")
-                loadHistory()
                 Toast.makeText(this@HistoryActivity, "Restored", Toast.LENGTH_SHORT).show()
+                loadHistory()
 
             } catch (ex: Exception) {
                 Log.e(TAG, "❌ Failed to restore", ex)
+
                 Toast.makeText(
                     this@HistoryActivity,
                     "Failed to restore",
@@ -312,11 +327,9 @@ class HistoryActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * ✅ FIXED: Use correct string resources
-     */
     private fun showClearAllConfirmation() {
         Log.d(TAG, "⚠️ showClearAllConfirmation()")
+
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.clear_history)
             .setMessage(getString(R.string.delete_confirmation))
@@ -332,6 +345,7 @@ class HistoryActivity : AppCompatActivity() {
 
     private fun clearAllHistory() {
         Log.d(TAG, "🗑️ clearAllHistory()")
+
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
@@ -339,19 +353,19 @@ class HistoryActivity : AppCompatActivity() {
                     database.resultDao().deleteAllResults()
                 }
 
-                Log.d(TAG, "✅ All history cleared from database")
                 allResults.clear()
+                currentQuery = ""
+                currentSortOrder = SortOrder.NEWEST_FIRST
+
                 adapter.clear()
                 showEmptyState()
+
                 Toast.makeText(this@HistoryActivity, "History cleared", Toast.LENGTH_SHORT).show()
 
             } catch (ex: Exception) {
                 Log.e(TAG, "❌ Failed to clear history", ex)
-                Toast.makeText(
-                    this@HistoryActivity,
-                    "Failed to clear history",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this@HistoryActivity, "Failed to clear history", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
     }
@@ -361,6 +375,8 @@ class HistoryActivity : AppCompatActivity() {
 
         val searchItem = menu?.findItem(R.id.action_search)
         val searchView = searchItem?.actionView as? SearchView
+
+        searchView?.queryHint = getString(R.string.search)
 
         searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean = false
@@ -376,28 +392,8 @@ class HistoryActivity : AppCompatActivity() {
     }
 
     private fun filterBySearch(query: String) {
-        Log.d(TAG, "🔍 filterBySearch() - query: '$query'")
-
-        if (query.isEmpty()) {
-            Log.d(TAG, "  Empty query, showing all results")
-            displayResults()
-        } else {
-            val searchResults = allResults.filter {
-                it.className.contains(query, ignoreCase = true) ||
-                        it.grade?.contains(query, ignoreCase = true) == true
-            }
-
-            Log.d(TAG, "  Found ${searchResults.size} matching results")
-
-            if (searchResults.isNotEmpty()) {
-                binding.emptyStateLayout.visibility = View.GONE
-                binding.rvHistory.visibility = View.VISIBLE
-                adapter.submitList(sortResults(searchResults, currentSortOrder))
-                updateStats(searchResults)
-            } else {
-                showEmptyState()
-            }
-        }
+        currentQuery = query.trim()
+        displayResults()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -409,42 +405,36 @@ class HistoryActivity : AppCompatActivity() {
             }
 
             R.id.action_sort_newest -> {
-                Log.d(TAG, "🔄 Sort: Newest First")
                 currentSortOrder = SortOrder.NEWEST_FIRST
                 displayResults()
                 true
             }
 
             R.id.action_sort_oldest -> {
-                Log.d(TAG, "🔄 Sort: Oldest First")
                 currentSortOrder = SortOrder.OLDEST_FIRST
                 displayResults()
                 true
             }
 
             R.id.action_sort_confidence_high -> {
-                Log.d(TAG, "🔄 Sort: Highest Confidence")
                 currentSortOrder = SortOrder.HIGHEST_CONFIDENCE
                 displayResults()
                 true
             }
 
             R.id.action_sort_confidence_low -> {
-                Log.d(TAG, "🔄 Sort: Lowest Confidence")
                 currentSortOrder = SortOrder.LOWEST_CONFIDENCE
                 displayResults()
                 true
             }
 
             R.id.action_sort_name_az -> {
-                Log.d(TAG, "🔄 Sort: Name A-Z")
                 currentSortOrder = SortOrder.NAME_AZ
                 displayResults()
                 true
             }
 
             R.id.action_sort_name_za -> {
-                Log.d(TAG, "🔄 Sort: Name Z-A")
                 currentSortOrder = SortOrder.NAME_ZA
                 displayResults()
                 true

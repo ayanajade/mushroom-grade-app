@@ -1,5 +1,6 @@
 package com.example.mushroom_grader.ui.fragments
 
+import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -49,9 +50,7 @@ class HistoryAdapter(
     }
 
     override fun onBindViewHolder(holder: HistoryViewHolder, position: Int) {
-        if (position < items.size) {
-            holder.bind(items[position])
-        }
+        if (position < items.size) holder.bind(items[position])
     }
 
     override fun getItemCount(): Int = items.size
@@ -63,46 +62,56 @@ class HistoryAdapter(
         fun bind(result: ClassificationResult) {
             val context = binding.root.context
 
-            // Format date
+            // Date
             val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-            val date = dateFormat.format(Date(result.timestamp))
+            binding.tvTimestamp.text = dateFormat.format(Date(result.timestamp))
 
-            // Format confidence
-            val confidenceStr = String.format(Locale.getDefault(), "Confidence: %.1f%%", result.confidence * 100)
-
-            // ✅ CORRECT IDs from YOUR item_history.xml
+            // Name
             binding.tvName.text = result.className
-            binding.tvConfidence.text = confidenceStr
-            binding.tvTimestamp.text = date
 
-            // Set safety badge based on poisonous status
-            if (result.isPoisonous) {
-                binding.tvSafetyBadge.text = "⚠️ POISONOUS"
-                binding.tvSafetyBadge.setBackgroundColor(
-                    ContextCompat.getColor(context, android.R.color.holo_red_dark)
-                )
-            } else {
-                binding.tvSafetyBadge.text = "✓ SAFE"
-                binding.tvSafetyBadge.setBackgroundColor(
-                    ContextCompat.getColor(context, android.R.color.holo_green_dark)
-                )
+            // Confidence (item_history.xml already has the "Confidence:" label)
+            binding.tvConfidence.text =
+                String.format(Locale.getDefault(), "%.1f%%", result.confidence * 100)
+
+            // Optional: tint confidence based on safety
+            val confidenceColor = when {
+                result.isPoisonous -> android.R.color.holo_red_dark
+                result.category.name == "INEDIBLE" -> android.R.color.holo_orange_dark
+                else -> android.R.color.holo_green_dark
+            }
+            binding.tvConfidence.setTextColor(ContextCompat.getColor(context, confidenceColor))
+
+            // Badge
+            when {
+                result.isPoisonous -> {
+                    binding.tvSafetyBadge.text = "⚠️ POISONOUS"
+                    binding.tvSafetyBadge.setBackgroundResource(R.drawable.badge_poison)
+                }
+                result.category.name == "INEDIBLE" -> {
+                    binding.tvSafetyBadge.text = "INEDIBLE"
+                    binding.tvSafetyBadge.setBackgroundResource(R.drawable.badge_inedible)
+                }
+                else -> {
+                    binding.tvSafetyBadge.text = "✓ SAFE"
+                    binding.tvSafetyBadge.setBackgroundResource(R.drawable.badge_safe)
+                }
             }
 
-            // Load image if path exists
-            result.imagePath?.let { path ->
+            // Image
+            val path = result.imagePath
+            if (!path.isNullOrBlank()) {
                 try {
-                    val bitmap = android.graphics.BitmapFactory.decodeFile(path)
-                    binding.ivMushroom.setImageBitmap(bitmap)
-                } catch (e: Exception) {
+                    val bitmap = BitmapFactory.decodeFile(path)
+                    if (bitmap != null) binding.ivMushroom.setImageBitmap(bitmap)
+                    else binding.ivMushroom.setImageResource(R.mipmap.ic_launcher)
+                } catch (_: Exception) {
                     binding.ivMushroom.setImageResource(R.mipmap.ic_launcher)
                 }
-            } ?: run {
+            } else {
                 binding.ivMushroom.setImageResource(R.mipmap.ic_launcher)
             }
 
-            binding.root.setOnClickListener {
-                onItemClick(result)
-            }
+            binding.root.setOnClickListener { onItemClick(result) }
         }
     }
 
@@ -112,7 +121,6 @@ class HistoryAdapter(
     ) : DiffUtil.Callback() {
 
         override fun getOldListSize() = oldList.size
-
         override fun getNewListSize() = newList.size
 
         override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {

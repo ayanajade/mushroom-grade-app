@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- IMPORTANT: parent="" prevents Android from trying to inherit from a non-existent ShapeAppearanceOverlay -->
+    <style name="ShapeAppearanceOverlay.MycoGrade" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <!-- Optional: inherits from MycoGrade (works either way) -->
+    <style name="ShapeAppearanceOverlay.MycoGrade.Circle" parent="ShapeAppearanceOverlay.MycoGrade" />
+
+</resources>

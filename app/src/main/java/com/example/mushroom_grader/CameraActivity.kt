@@ -10,10 +10,12 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.camera2.interop.Camera2Interop
 import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
@@ -34,15 +36,16 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
-@ExperimentalCamera2Interop
+@OptIn(ExperimentalCamera2Interop::class)
 class CameraActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCameraBinding
-    private lateinit var imageProcessor: ImageProcessor
     private lateinit var mlModelHelper: MLModelHelper
     private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
+
     private var isFocused = false
     private var captureCount = 0
 
@@ -52,45 +55,35 @@ class CameraActivity : AppCompatActivity() {
         private const val KEY_FIRST_CAMERA_USE = "first_camera_use"
     }
 
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            startCamera()
-        } else {
-            Toast.makeText(this, R.string.camera_permission_required, Toast.LENGTH_SHORT).show()
-            finish()
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) startCamera()
+            else {
+                Toast.makeText(this, R.string.camera_permission_required, Toast.LENGTH_SHORT).show()
+                finish()
+            }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         binding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        imageProcessor = ImageProcessor(this)
         mlModelHelper = MLModelHelper(this)
         cameraExecutor = Executors.newSingleThreadExecutor()
 
-        // Show guide instructions
-        binding.tvDistance.setText(R.string.camera_checklist)
-
-        if (allPermissionsGranted()) {
-            startCamera()
-        } else {
-            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-        }
-
         setupClickListeners()
+        showChecklist()
 
-        // Show tutorial hint on first use
+        if (allPermissionsGranted()) startCamera()
+        else requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+
         val preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         val firstTime = preferences.getBoolean(KEY_FIRST_CAMERA_USE, true)
         if (firstTime) {
             showQuickTips()
-            preferences.edit {
-                putBoolean(KEY_FIRST_CAMERA_USE, false)
-            }
+            preferences.edit { putBoolean(KEY_FIRST_CAMERA_USE, false) }
         }
     }
 
@@ -103,14 +96,18 @@ class CameraActivity : AppCompatActivity() {
             }
         }
 
-        binding.btnClose.setOnClickListener {
-            finish()
-        }
+        binding.btnClose.setOnClickListener { finish() }
+        binding.btnHelp.setOnClickListener { showQuickTips() }
+    }
 
-        // Help button
-        binding.btnHelp.setOnClickListener {
-            showQuickTips()
-        }
+    private fun showChecklist() {
+        binding.tvGuidanceTitle.setText(R.string.checklist_title)
+        binding.tvDistance.setText(R.string.camera_checklist)
+    }
+
+    private fun showStatus(@StringRes messageRes: Int) {
+        binding.tvGuidanceTitle.setText(R.string.status_title)
+        binding.tvDistance.setText(messageRes)
     }
 
     private fun showQuickTips() {
@@ -126,6 +123,7 @@ class CameraActivity : AppCompatActivity() {
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+
         cameraProviderFuture.addListener({
             try {
                 val cameraProvider = cameraProviderFuture.get()
@@ -138,22 +136,19 @@ class CameraActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    @OptIn(ExperimentalCamera2Interop::class)
     private fun bindCameraUseCases(cameraProvider: ProcessCameraProvider) {
         cameraProvider.unbindAll()
 
-        val preview = Preview.Builder()
-            .build()
-            .also {
-                it.surfaceProvider = binding.previewView.surfaceProvider
-            }
+        val preview = Preview.Builder().build().also {
+            it.surfaceProvider = binding.previewView.surfaceProvider
+        }
 
-        // LOCKED SETTINGS for consistency
         val imageCaptureBuilder = ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
             .setTargetRotation(Surface.ROTATION_0)
             .setFlashMode(ImageCapture.FLASH_MODE_OFF)
 
+        // Keep your Camera2Interop tuning (same intent as original).
         val camera2Interop = Camera2Interop.Extender(imageCaptureBuilder)
         camera2Interop.setCaptureRequestOption(
             android.hardware.camera2.CaptureRequest.CONTROL_AWB_MODE,
@@ -165,6 +160,7 @@ class CameraActivity : AppCompatActivity() {
         )
 
         imageCapture = imageCaptureBuilder.build()
+
         val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
         try {
@@ -178,55 +174,55 @@ class CameraActivity : AppCompatActivity() {
             val cameraControl = camera.cameraControl
             val exposureState = camera.cameraInfo.exposureState
             val range = exposureState.exposureCompensationRange
-            if (range.contains(0)) {
-                cameraControl.setExposureCompensationIndex(0)
-                Log.d(TAG, "✅ Exposure locked at neutral")
-            }
+            if (range.contains(0)) cameraControl.setExposureCompensationIndex(0)
 
-            // Tap-to-focus with visual feedback
             binding.previewView.setOnTouchListener { view, event ->
                 view.performClick()
+
                 val factory = binding.previewView.meteringPointFactory
                 val point = factory.createPoint(event.x, event.y)
-                val action = androidx.camera.core.FocusMeteringAction.Builder(point)
-                    .setAutoCancelDuration(3, java.util.concurrent.TimeUnit.SECONDS)
+
+                val action = FocusMeteringAction.Builder(point)
+                    .setAutoCancelDuration(3, TimeUnit.SECONDS)
                     .build()
 
                 val future = cameraControl.startFocusAndMetering(action)
                 future.addListener({
                     try {
-                        val result = future.get()
-                        if (result.isFocusSuccessful) {
+                        val focusResult = future.get()
+                        if (focusResult.isFocusSuccessful) {
                             runOnUiThread {
                                 isFocused = true
                                 binding.btnCapture.isEnabled = true
                                 binding.btnCapture.setText(R.string.capture_focused)
-                                Toast.makeText(this, R.string.focused_on_mushroom, Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    this,
+                                    R.string.focused_on_mushroom,
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "Focus failed", e)
                     }
                 }, ContextCompat.getMainExecutor(this))
+
                 true
             }
 
-            // Initial button state
             binding.btnCapture.isEnabled = true
             binding.btnCapture.setText(R.string.tap_mushroom_to_focus)
-            Log.d(TAG, "✅ Camera configured with guidance system")
 
         } catch (e: Exception) {
             val message = getString(R.string.camera_bind_failed, e.message)
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-            Log.e(TAG, "❌ Camera binding failed", e)
+            Log.e(TAG, "Camera binding failed", e)
         }
     }
 
     private fun takePhoto() {
-        val imageCapture = imageCapture ?: return
+        val capture = imageCapture ?: return
 
-        // Show reminder before first capture
         if (captureCount == 0) {
             Toast.makeText(this, R.string.hold_steady_tip, Toast.LENGTH_SHORT).show()
         }
@@ -234,18 +230,17 @@ class CameraActivity : AppCompatActivity() {
 
         binding.progressBar.visibility = View.VISIBLE
         binding.btnCapture.isEnabled = false
-        binding.tvDistance.setText(R.string.capturing)
+        showStatus(R.string.capturing)
 
         val photoFile = createFile()
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
-        imageCapture.takePicture(
+        capture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    Log.d(TAG, "✅ Photo captured with consistent settings")
-                    binding.tvDistance.setText(R.string.processing)
+                    showStatus(R.string.processing)
                     processAndClassifyImage(photoFile)
                 }
 
@@ -253,7 +248,9 @@ class CameraActivity : AppCompatActivity() {
                     binding.progressBar.visibility = View.GONE
                     binding.btnCapture.isEnabled = true
                     binding.btnCapture.setText(R.string.tap_mushroom_to_focus)
-                    binding.tvDistance.setText(R.string.camera_checklist)
+                    isFocused = false
+                    showChecklist()
+
                     val message = getString(R.string.photo_capture_failed, exception.message)
                     Toast.makeText(this@CameraActivity, message, Toast.LENGTH_SHORT).show()
                     Log.e(TAG, "Photo capture failed", exception)
@@ -265,53 +262,46 @@ class CameraActivity : AppCompatActivity() {
     private fun processAndClassifyImage(imageFile: File) {
         lifecycleScope.launch {
             try {
+                val bitmap = withContext(Dispatchers.Default) {
+                    ImageProcessor.processImage(imageFile.absolutePath)
+                }
+
+                val lightingQuality = ImageProcessor.analyzeLightingQuality(bitmap)
+                when (lightingQuality) {
+                    ImageProcessor.Companion.LightingQuality.TOO_DARK ->
+                        showStatus(R.string.dark_image_adjusting)
+
+                    ImageProcessor.Companion.LightingQuality.TOO_BRIGHT ->
+                        showStatus(R.string.bright_image_adjusting)
+
+                    else ->
+                        showStatus(R.string.good_lighting_processing)
+                }
+
                 val result = withContext(Dispatchers.Default) {
-                    Log.d(TAG, "🔄 Processing with training-consistent pipeline")
-
-                    // Load and rotate image (EXIF handling only)
-                    val bitmap = ImageProcessor.processImage(imageFile.absolutePath)
-
-                    // Analyze lighting quality for user feedback only (doesn't modify image)
-                    val lightingQuality = ImageProcessor.analyzeLightingQuality(bitmap)
-                    Log.d(TAG, "✅ Lighting quality: $lightingQuality")
-
-                    withContext(Dispatchers.Main) {
-                        when (lightingQuality) {
-                            ImageProcessor.Companion.LightingQuality.TOO_DARK -> {
-                                binding.tvDistance.setText(R.string.dark_image_adjusting)
-                            }
-                            ImageProcessor.Companion.LightingQuality.TOO_BRIGHT -> {
-                                binding.tvDistance.setText(R.string.bright_image_adjusting)
-                            }
-                            else -> {
-                                binding.tvDistance.setText(R.string.good_lighting_processing)
-                            }
-                        }
-                    }
-
-                    // ✅ FIXED: Direct classification without enhancement
-                    // Resize and normalization happen in MLModelHelper.preprocessImage()
-                    // Model handles variations using learned patterns from 20 training augmentations
                     mlModelHelper.classifyImage(bitmap)
                 }
 
                 if (result != null) {
-                    Log.d(TAG, "🎯 Classification: ${result.className} (${result.confidence})")
+                    // ✅ CHANGE: go directly to ResultActivity (no bottom sheet).
+                    binding.progressBar.visibility = View.GONE
                     navigateToResult(result, imageFile)
                 } else {
                     binding.progressBar.visibility = View.GONE
                     binding.btnCapture.isEnabled = true
                     binding.btnCapture.setText(R.string.tap_mushroom_to_focus)
                     isFocused = false
-                    binding.tvDistance.setText(R.string.camera_checklist)
+                    showChecklist()
                     showImagingTips()
                 }
+
             } catch (e: Exception) {
                 binding.progressBar.visibility = View.GONE
                 binding.btnCapture.isEnabled = true
                 binding.btnCapture.setText(R.string.tap_mushroom_to_focus)
                 isFocused = false
-                binding.tvDistance.setText(R.string.camera_checklist)
+                showChecklist()
+
                 val message = getString(R.string.classification_failed, e.message)
                 Toast.makeText(this@CameraActivity, message, Toast.LENGTH_SHORT).show()
                 Log.e(TAG, "Classification error", e)
@@ -325,15 +315,23 @@ class CameraActivity : AppCompatActivity() {
             .setMessage(R.string.imaging_tips_message)
             .setPositiveButton(R.string.try_again) { _, _ ->
                 binding.btnCapture.isEnabled = true
+                binding.btnCapture.setText(R.string.tap_mushroom_to_focus)
+                isFocused = false
+                showChecklist()
             }
             .setNeutralButton(R.string.see_tutorial) { _, _ ->
                 startActivity(Intent(this, ImagingTutorialActivity::class.java))
             }
-            .setNegativeButton(R.string.cancel) { _, _ -> finish() }
+            .setNegativeButton(R.string.cancel) { _, _ ->
+                finish()
+            }
             .show()
     }
 
-    private fun navigateToResult(result: com.example.mushroom_grader.ml.ClassificationResult, imageFile: File) {
+    private fun navigateToResult(
+        result: com.example.mushroom_grader.ml.ClassificationResult,
+        imageFile: File
+    ) {
         val intent = Intent(this, ResultActivity::class.java).apply {
             putExtra("className", result.className)
             putExtra("classId", result.classId)
@@ -343,6 +341,7 @@ class CameraActivity : AppCompatActivity() {
             putExtra("grade", result.grade)
             putExtra("imagePath", imageFile.absolutePath)
         }
+
         startActivity(intent)
         finish()
     }
@@ -353,15 +352,13 @@ class CameraActivity : AppCompatActivity() {
         return File.createTempFile("MUSHROOM_${timeStamp}_", ".jpg", storageDir)
     }
 
-    private fun allPermissionsGranted() = ContextCompat.checkSelfPermission(
-        this, Manifest.permission.CAMERA
-    ) == PackageManager.PERMISSION_GRANTED
+    private fun allPermissionsGranted(): Boolean =
+        ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
+                PackageManager.PERMISSION_GRANTED
 
     override fun onDestroy() {
         super.onDestroy()
-        if (::cameraExecutor.isInitialized) {
-            cameraExecutor.shutdown()
-        }
+        if (::cameraExecutor.isInitialized) cameraExecutor.shutdown()
         mlModelHelper.close()
     }
 }
