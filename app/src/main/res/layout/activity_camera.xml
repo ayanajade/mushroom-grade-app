@@ -7,6 +7,7 @@
     android:background="#000000"
     android:fitsSystemWindows="true">
 
+    <!-- Camera preview (background) -->
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
         android:layout_width="0dp"
@@ -91,8 +92,9 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="14dp"
         android:layout_marginEnd="16dp"
+        android:elevation="14dp"
         app:cardCornerRadius="18dp"
-        app:cardElevation="10dp"
+        app:cardElevation="14dp"
         app:cardUseCompatPadding="true"
         app:cardBackgroundColor="#EFFFFFFF"
         app:strokeColor="#EEF0F4"
@@ -110,15 +112,15 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <ImageView
                     android:id="@+id/ivGuidanceIcon"
                     android:layout_width="18dp"
                     android:layout_height="18dp"
-                    android:src="@drawable/ic_info"
                     android:contentDescription="@null"
+                    android:src="@drawable/ic_info"
                     app:tint="#0F172A" />
 
                 <com.google.android.material.textview.MaterialTextView
@@ -138,13 +140,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:lineSpacingExtra="2dp"
                 android:text="@string/camera_checklist"
                 android:textColor="#334155"
-                android:textSize="12sp"
-                android:lineSpacingExtra="2dp" />
+                android:textSize="12sp" />
 
         </LinearLayout>
-
     </com.google.android.material.card.MaterialCardView>
 
     <!-- Bottom controls -->
@@ -155,8 +156,9 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
+        android:elevation="14dp"
         app:cardCornerRadius="22dp"
-        app:cardElevation="12dp"
+        app:cardElevation="14dp"
         app:cardUseCompatPadding="true"
         app:cardBackgroundColor="#EFFFFFFF"
         app:strokeColor="#EEF0F4"
@@ -175,8 +177,8 @@
                 android:id="@+id/progressBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginBottom="12dp"
+                android:visibility="gone" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCapture"
@@ -185,9 +187,9 @@
                 android:enabled="false"
                 android:text="@string/tap_mushroom_to_focus"
                 android:textAllCaps="false"
+                android:textColor="@android:color/white"
                 android:textSize="14sp"
                 android:letterSpacing="0.02"
-                android:textColor="@android:color/white"
                 app:cornerRadius="14dp"
                 app:backgroundTint="#15803D" />
 
@@ -196,37 +198,41 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
+                android:gravity="center"
                 android:text="@string/tap_instruction"
-                android:textSize="12sp"
                 android:textColor="#6B7280"
-                android:gravity="center" />
+                android:textSize="12sp" />
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Guide frame (anchor) -->
+    <!-- Guide frame (now constrained between card + bottom controls, responsive square) -->
     <View
         android:id="@+id/guideFrame"
-        android:layout_width="280dp"
-        android:layout_height="280dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginEnd="48dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
         android:background="@drawable/guide_frame_border"
-        android:elevation="10dp"
         android:clickable="false"
         android:focusable="false"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:elevation="2dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_bias="0.46" />
+        app:layout_constraintTop_toBottomOf="@id/cardGuidance"
+        app:layout_constraintBottom_toTopOf="@id/bottomControls"
+        app:layout_constraintDimensionRatio="1:1" />
 
     <!-- Corner overlays -->
     <ImageView
         android:id="@+id/guideCornerTL"
         android:layout_width="28dp"
         android:layout_height="28dp"
-        android:src="@drawable/corner_top_left"
         android:contentDescription="@null"
-        android:elevation="12dp"
+        android:src="@drawable/corner_top_left"
+        android:elevation="3dp"
         app:layout_constraintStart_toStartOf="@id/guideFrame"
         app:layout_constraintTop_toTopOf="@id/guideFrame" />
 
@@ -234,9 +240,9 @@
         android:id="@+id/guideCornerTR"
         android:layout_width="28dp"
         android:layout_height="28dp"
-        android:src="@drawable/corner_top_right"
         android:contentDescription="@null"
-        android:elevation="12dp"
+        android:src="@drawable/corner_top_right"
+        android:elevation="3dp"
         app:layout_constraintEnd_toEndOf="@id/guideFrame"
         app:layout_constraintTop_toTopOf="@id/guideFrame" />
 
@@ -244,9 +250,9 @@
         android:id="@+id/guideCornerBL"
         android:layout_width="28dp"
         android:layout_height="28dp"
-        android:src="@drawable/corner_bottom_left"
         android:contentDescription="@null"
-        android:elevation="12dp"
+        android:src="@drawable/corner_bottom_left"
+        android:elevation="3dp"
         app:layout_constraintStart_toStartOf="@id/guideFrame"
         app:layout_constraintBottom_toBottomOf="@id/guideFrame" />
 
@@ -254,9 +260,9 @@
         android:id="@+id/guideCornerBR"
         android:layout_width="28dp"
         android:layout_height="28dp"
-        android:src="@drawable/corner_bottom_right"
         android:contentDescription="@null"
-        android:elevation="12dp"
+        android:src="@drawable/corner_bottom_right"
+        android:elevation="3dp"
         app:layout_constraintEnd_toEndOf="@id/guideFrame"
         app:layout_constraintBottom_toBottomOf="@id/guideFrame" />
 

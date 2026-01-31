@@ -1,11 +1,18 @@
 package com.example.mushroom_grader
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.OptIn
@@ -16,12 +23,16 @@ import androidx.lifecycle.lifecycleScope
 import com.example.mushroom_grader.database.AppDatabase
 import com.example.mushroom_grader.databinding.ActivityResultBinding
 import com.example.mushroom_grader.ml.ClassificationResult
+import com.example.mushroom_grader.ml.FreshnessAnalysisResult
 import com.example.mushroom_grader.ml.FreshnessAnalyzer
 import com.example.mushroom_grader.ml.MLModelHelper
 import com.example.mushroom_grader.ml.MushroomCategory
+import com.example.mushroom_grader.ml.MushroomCharacteristics
 import com.example.mushroom_grader.ml.MushroomCharacteristicsAnalyzer
+import com.example.mushroom_grader.ml.ShelfLifeData
 import com.example.mushroom_grader.ml.ShelfLifePredictor
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -29,13 +40,14 @@ import java.util.Locale
 
 /**
  * ResultActivity - Displays mushroom classification results
+ *
  * Features:
  * - Shows mushroom image and classification details
  * - Displays safety status (Edible/Poisonous/Inedible)
  * - Shows grading information
- * - ✅ Analyzes actual mushroom freshness from image
- * - ✅ Analyzes visual characteristics (size, color, surface)
- * - ✅ Storage & shelf life predictions based on visual freshness
+ * - Analyzes actual mushroom freshness from image
+ * - Analyzes visual characteristics (size, color, surface)
+ * - Storage & shelf life predictions based on visual freshness
  * - Share and save functionality
  */
 class ResultActivity : AppCompatActivity() {
@@ -55,8 +67,8 @@ class ResultActivity : AppCompatActivity() {
     private var imagePath: String? = null
     private var imageBitmap: Bitmap? = null
 
-    // ✅ NEW: Store characteristics for "More Info" dialog
-    private var currentCharacteristics: com.example.mushroom_grader.ml.MushroomCharacteristics? = null
+    // Store characteristics for "More Info" dialog
+    private var currentCharacteristics: MushroomCharacteristics? = null
 
     companion object {
         private const val TAG = "ResultActivity"
@@ -64,7 +76,6 @@ class ResultActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "🚀 onCreate started")
 
         binding = ActivityResultBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -86,33 +97,31 @@ class ResultActivity : AppCompatActivity() {
     }
 
     /**
-     * ✅ UPDATED: Initialize ML Model Helper and analyzers
+     * Initialize ML Model Helper and analyzers
      */
     private fun initializeAnalyzers() {
         mlModelHelper = MLModelHelper(this)
         freshnessAnalyzer = FreshnessAnalyzer()
         characteristicsAnalyzer = MushroomCharacteristicsAnalyzer()
-        Log.d(TAG, "✅ ML Model and Analyzers initialized")
+        Log.d(TAG, "ML model and analyzers initialized")
     }
 
     /**
      * Load intent data and display all results
      */
     private fun loadDataAndDisplay() {
-        Log.d(TAG, "📥 Loading data from intent...")
-
+        Log.d(TAG, "Loading data from intent")
         getIntentData()
+
         displayResults()
         displayStoragePredictions()
         setupClickListeners()
 
-        // Only save if NOT from history (prevents duplicates)
         val isFromHistory = intent.getBooleanExtra("fromHistory", false)
         if (!isFromHistory) {
-            Log.d(TAG, "💾 New result - saving to database")
             saveToDatabase()
         } else {
-            Log.d(TAG, "👁️ Viewing from history - skipping database save")
+            Log.d(TAG, "Viewing from history - skipping database save")
         }
     }
 
@@ -124,11 +133,11 @@ class ResultActivity : AppCompatActivity() {
         classId = intent.getIntExtra("classId", -1)
         confidence = intent.getFloatExtra("confidence", 0f)
         isPoisonous = intent.getBooleanExtra("isPoisonous", false)
-        category = intent.getStringExtra("category") ?: "INEDIBLE"
+        category = intent.getStringExtra("category") ?: MushroomCategory.INEDIBLE.name
         grade = intent.getStringExtra("grade")
         imagePath = intent.getStringExtra("imagePath")
 
-        Log.d(TAG, "📦 Data loaded: $className (ID: $classId, Confidence: $confidence)")
+        Log.d(TAG, "Data loaded: $className (id=$classId, conf=$confidence, category=$category)")
     }
 
     /**
@@ -150,9 +159,9 @@ class ResultActivity : AppCompatActivity() {
             try {
                 imageBitmap = BitmapFactory.decodeFile(path)
                 binding.ivMushroom.setImageBitmap(imageBitmap)
-                Log.d(TAG, "✅ Image loaded from: $path")
+                Log.d(TAG, "Image loaded from: $path")
             } catch (ex: Exception) {
-                Log.e(TAG, "❌ Failed to load image", ex)
+                Log.e(TAG, "Failed to load image", ex)
                 binding.ivMushroom.setImageResource(android.R.mipmap.sym_def_app_icon)
             }
         } ?: run {
@@ -165,7 +174,6 @@ class ResultActivity : AppCompatActivity() {
      */
     private fun displayBasicInfo() {
         binding.tvMushroomName.text = className
-
         val confidencePercent = String.format(Locale.getDefault(), "%.2f%%", confidence * 100f)
         binding.tvConfidence.text = getString(R.string.confidence_format, confidencePercent)
     }
@@ -236,10 +244,9 @@ class ResultActivity : AppCompatActivity() {
     }
 
     /**
-     * ✅ UPDATED: Display storage predictions with FRESHNESS & CHARACTERISTICS ANALYSIS
+     * Display storage predictions with freshness & characteristics analysis
      */
     private fun displayStoragePredictions() {
-        // Only show for edible mushrooms
         if (category != MushroomCategory.EDIBLE.name) {
             binding.cardStoragePredictions.visibility = View.GONE
             binding.cardFreshness.visibility = View.GONE
@@ -249,16 +256,11 @@ class ResultActivity : AppCompatActivity() {
         try {
             binding.cardStoragePredictions.visibility = View.VISIBLE
 
-            // ✅ Analyze actual mushroom freshness and characteristics from image
             lifecycleScope.launch {
                 val analysisResults = withContext(Dispatchers.Default) {
                     imageBitmap?.let { bitmap ->
-                        Log.d(TAG, "🔍 Starting freshness and characteristics analysis...")
-
                         val freshnessResult = freshnessAnalyzer.analyzeFreshness(bitmap, className)
-                        val characteristics =
-                            characteristicsAnalyzer.analyzeCharacteristics(bitmap, className, grade)
-
+                        val characteristics = characteristicsAnalyzer.analyzeCharacteristics(bitmap, className, grade)
                         Pair(freshnessResult, characteristics)
                     }
                 }
@@ -266,92 +268,51 @@ class ResultActivity : AppCompatActivity() {
                 if (analysisResults != null) {
                     val (freshnessResult, characteristics) = analysisResults
 
-                    Log.d(TAG, "✅ Analysis complete:")
-                    Log.d(TAG, " Freshness Score: ${freshnessResult.freshnessScore}%")
-                    Log.d(TAG, " Size: ${characteristics.estimatedSize}")
-                    Log.d(TAG, " Colors: ${characteristics.dominantColors}")
-
                     displayFreshnessCard(freshnessResult)
                     displayAccurateDescription(characteristics)
 
                     val predictions = ShelfLifePredictor.getAllStoragePredictions(
-                        className,
-                        freshnessResult.shelfLifeMultiplier
+                        mushroomName = className,
+                        freshnessMultiplier = freshnessResult.shelfLifeMultiplier
                     )
 
                     binding.layoutStorageRows.removeAllViews()
-                    predictions.forEach { prediction ->
-                        addStorageRow(prediction)
-                    }
+                    predictions.forEach { addStorageRow(it) }
                 } else {
-                    Log.w(TAG, "⚠️ Could not analyze, using default")
-
                     binding.cardFreshness.visibility = View.GONE
-                    val predictions = ShelfLifePredictor.getAllStoragePredictions(className)
 
+                    val predictions = ShelfLifePredictor.getAllStoragePredictions(className)
                     binding.layoutStorageRows.removeAllViews()
-                    predictions.forEach { prediction ->
-                        addStorageRow(prediction)
-                    }
+                    predictions.forEach { addStorageRow(it) }
                 }
             }
         } catch (ex: Exception) {
-            Log.e(TAG, "❌ Failed to display storage predictions", ex)
+            Log.e(TAG, "Failed to display storage predictions", ex)
             binding.cardStoragePredictions.visibility = View.GONE
             binding.cardFreshness.visibility = View.GONE
         }
     }
 
     /**
-     * ✅ Display freshness analysis in dedicated card (Dynamic with proper formatting)
-     *
-     * IMPORTANT FIX:
-     * Convert scores to Int before getString(...) formatting to avoid runtime format crashes.
+     * Display freshness analysis in dedicated card
      */
-    private fun displayFreshnessCard(
-        freshnessResult: com.example.mushroom_grader.ml.FreshnessAnalysisResult
-    ) {
+    private fun displayFreshnessCard(freshnessResult: FreshnessAnalysisResult) {
         binding.cardFreshness.visibility = View.VISIBLE
 
         val freshnessScoreInt = freshnessResult.freshnessScore.coerceIn(0, 100)
-
-        binding.tvFreshnessScore.text =
-            getString(R.string.percentage_format, freshnessScoreInt)
-
+        binding.tvFreshnessScore.text = getString(R.string.percentage_format, freshnessScoreInt)
         binding.tvFreshnessStatus.text = freshnessResult.status
-
         binding.progressFreshness.progress = freshnessScoreInt
 
         val (progressColor, textColor) = when {
-            freshnessScoreInt >= 85 -> Pair(
-                android.R.color.holo_green_dark,
-                android.R.color.holo_green_dark
-            )
-
-            freshnessScoreInt >= 70 -> Pair(
-                android.R.color.holo_green_light,
-                android.R.color.holo_green_light
-            )
-
-            freshnessScoreInt >= 50 -> Pair(
-                android.R.color.holo_orange_light,
-                android.R.color.holo_orange_dark
-            )
-
-            freshnessScoreInt >= 30 -> Pair(
-                android.R.color.holo_orange_dark,
-                android.R.color.holo_red_dark
-            )
-
-            else -> Pair(
-                android.R.color.holo_red_dark,
-                android.R.color.holo_red_dark
-            )
+            freshnessScoreInt >= 85 -> Pair(android.R.color.holo_green_dark, android.R.color.holo_green_dark)
+            freshnessScoreInt >= 70 -> Pair(android.R.color.holo_green_light, android.R.color.holo_green_light)
+            freshnessScoreInt >= 50 -> Pair(android.R.color.holo_orange_light, android.R.color.holo_orange_dark)
+            freshnessScoreInt >= 30 -> Pair(android.R.color.holo_orange_dark, android.R.color.holo_red_dark)
+            else -> Pair(android.R.color.holo_red_dark, android.R.color.holo_red_dark)
         }
 
-        binding.progressFreshness.progressTintList =
-            ContextCompat.getColorStateList(this, progressColor)
-
+        binding.progressFreshness.progressTintList = ContextCompat.getColorStateList(this, progressColor)
         binding.tvFreshnessScore.setTextColor(ContextCompat.getColor(this, textColor))
         binding.tvFreshnessStatus.setTextColor(ContextCompat.getColor(this, textColor))
 
@@ -362,75 +323,70 @@ class ResultActivity : AppCompatActivity() {
         val dynamicTitle = buildString {
             append(getString(R.string.shelf_life_by_storage))
             append("\n")
-            // FIX: ensure score is Int for %d placeholder (if your string uses %d).
             append(getString(R.string.current_freshness_format, freshnessScoreInt, freshnessResult.status))
         }
-
         binding.tvStoragePredictionsTitle.text = dynamicTitle
-        Log.d(TAG, "✅ Freshness card displayed: ${freshnessScoreInt}%")
     }
 
     /**
-     * ✅ Show detailed freshness analysis dialog
+     * Professional BottomSheet: freshness details
      */
-    private fun showFreshnessDetailsDialog(
-        freshnessResult: com.example.mushroom_grader.ml.FreshnessAnalysisResult
-    ) {
-        // FIX: convert to Int in case your string resources use %d
-        val colorScoreInt = freshnessResult.colorScore.coerceIn(0, 100)
-        val browningScoreInt = freshnessResult.browningScore.coerceIn(0, 100)
-        val spotScoreInt = freshnessResult.spotScore.coerceIn(0, 100)
-        val textureScoreInt = freshnessResult.textureScore.coerceIn(0, 100)
+    private fun showFreshnessDetailsDialog(freshnessResult: FreshnessAnalysisResult) {
+        val overall = freshnessResult.freshnessScore.coerceIn(0, 100)
+        val color = freshnessResult.colorScore.coerceIn(0, 100)
+        val browning = freshnessResult.browningScore.coerceIn(0, 100)
+        val spots = freshnessResult.spotScore.coerceIn(0, 100)
+        val texture = freshnessResult.textureScore.coerceIn(0, 100)
 
-        val message = buildString {
-            append(freshnessResult.details)
-            append("\n\n")
-            append(getString(R.string.component_scores))
-            append("\n")
-            append(getString(R.string.color_vibrancy_format, colorScoreInt))
-            append("\n")
-            append(getString(R.string.browning_level_format, browningScoreInt))
-            append("\n")
-            append(getString(R.string.spotting_format, spotScoreInt))
-            append("\n")
-            append(getString(R.string.texture_quality_format, textureScoreInt))
-            append("\n\n")
-            append(getString(R.string.freshness_affects_shelf_life))
-        }
+        val sheet = buildBottomSheetView(
+            title = getString(R.string.freshness_analysis_details),
+            subtitle = freshnessResult.status,
+            sections = listOf(
+                SheetSection(
+                    "Overview",
+                    listOf(
+                        SheetRow.Pill("Overall freshness", "$overall%", scoreColorRes(overall)),
+                        SheetRow.KeyValue("Shelf-life multiplier", String.format(Locale.getDefault(), "%.2fx", freshnessResult.shelfLifeMultiplier)),
+                        SheetRow.Body(getString(R.string.freshness_affects_shelf_life))
+                    )
+                ),
+                SheetSection(
+                    "Component scores",
+                    listOf(
+                        SheetRow.Progress("Color vibrancy", color),
+                        SheetRow.Progress("Browning level", browning),
+                        SheetRow.Progress("Spotting", spots),
+                        SheetRow.Progress("Texture quality", texture)
+                    )
+                )
+            )
+        )
 
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.freshness_analysis_details)
-            .setMessage(message)
-            .setPositiveButton(R.string.ok, null)
-            .show()
+        showBottomSheet(sheet)
     }
 
     /**
-     * ✅ NEW: Display accurate description based on actual image characteristics
+     * Display accurate description based on actual image characteristics (no emojis)
      */
-    private fun displayAccurateDescription(
-        characteristics: com.example.mushroom_grader.ml.MushroomCharacteristics
-    ) {
+    private fun displayAccurateDescription(characteristics: MushroomCharacteristics) {
         currentCharacteristics = characteristics
 
         binding.tvDetailedInfo.text = buildString {
             append(characteristics.description)
             append("\n\n")
-            append("📏 Size: ${characteristics.estimatedSize}\n")
-            append("🎨 Colors: ${characteristics.dominantColors.joinToString(", ")}\n")
-            append("✨ Surface: ${characteristics.surfaceCondition}")
+            append("Size: ${characteristics.estimatedSize}\n")
+            append("Colors: ${characteristics.dominantColors.joinToString(", ")}\n")
+            append("Surface: ${characteristics.surfaceCondition}")
             if (characteristics.visualDefects.isNotEmpty()) {
-                append("\n⚠️ Notes: ${characteristics.visualDefects.joinToString(", ")}")
+                append("\nNotes: ${characteristics.visualDefects.joinToString(", ")}")
             }
         }
-
-        Log.d(TAG, "✅ Accurate description displayed")
     }
 
     /**
      * Add a single storage method row to the table with freshness indicator
      */
-    private fun addStorageRow(prediction: com.example.mushroom_grader.ml.ShelfLifeData) {
+    private fun addStorageRow(prediction: ShelfLifeData) {
         val rowView = layoutInflater.inflate(
             R.layout.item_storage_row,
             binding.layoutStorageRows,
@@ -454,9 +410,7 @@ class ResultActivity : AppCompatActivity() {
 
         val freshnessIndicator = rowView.findViewById<View>(R.id.viewFreshnessIndicator)
         val freshnessStatus = prediction.getFreshnessStatus()
-        freshnessIndicator.setBackgroundColor(
-            ContextCompat.getColor(this, freshnessStatus.color)
-        )
+        freshnessIndicator.setBackgroundColor(ContextCompat.getColor(this, freshnessStatus.color))
 
         rowView.setOnClickListener {
             showDetailedStorageInfo(prediction)
@@ -466,16 +420,16 @@ class ResultActivity : AppCompatActivity() {
     }
 
     /**
-     * Get emoji icon for storage method
+     * Get professional (non-emoji) icon/label for storage method
      */
     private fun getStorageMethodIcon(methodName: String): String {
         return when (methodName) {
-            "VACUUM_SEALED" -> "🔒"
-            "REFRIGERATED_SEALED" -> "📦"
-            "REFRIGERATED_OPEN" -> "🧊"
-            "ROOM_TEMPERATURE" -> "🌡️"
-            "FROZEN" -> "❄️"
-            else -> "📋"
+            "VACUUM_SEALED" -> "VAC"
+            "REFRIGERATED_SEALED" -> "REF"
+            "REFRIGERATED_OPEN" -> "REF"
+            "ROOM_TEMPERATURE" -> "AMB"
+            "FROZEN" -> "FRZ"
+            else -> "STO"
         }
     }
 
@@ -491,54 +445,43 @@ class ResultActivity : AppCompatActivity() {
     }
 
     /**
-     * Show detailed storage information dialog with freshness status
+     * Professional BottomSheet: storage details
      */
-    private fun showDetailedStorageInfo(prediction: com.example.mushroom_grader.ml.ShelfLifeData) {
-        val message = buildStorageInfoMessage(prediction)
-
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.storage_details)
-            .setMessage(message)
-            .setPositiveButton(R.string.ok, null)
-            .show()
-    }
-
-    /**
-     * Build storage information message with freshness status
-     */
-    private fun buildStorageInfoMessage(prediction: com.example.mushroom_grader.ml.ShelfLifeData): String {
+    private fun showDetailedStorageInfo(prediction: ShelfLifeData) {
         val freshnessStatus = prediction.getFreshnessStatus()
         val daysRemaining = prediction.getDaysRemaining()
 
-        return buildString {
-            append(getString(R.string.storage_method_header, prediction.storageMethod.displayName))
-            append("\n\n")
+        val sheet = buildBottomSheetView(
+            title = getString(R.string.storage_details),
+            subtitle = prediction.storageMethod.displayName,
+            sections = listOf(
+                SheetSection(
+                    "Status",
+                    listOf(
+                        SheetRow.Pill("Freshness", freshnessStatus.message, freshnessStatus.color),
+                        SheetRow.KeyValue("Days remaining", daysRemaining.toString())
+                    )
+                ),
+                SheetSection(
+                    "Storage method",
+                    listOf(
+                        SheetRow.KeyValue("Temperature", prediction.storageTemperature),
+                        SheetRow.KeyValue("Predicted shelf life", "${prediction.calculatedDays} days"),
+                        SheetRow.KeyValue("Expiration date", prediction.getFormattedExpirationDate())
+                    )
+                ),
+                SheetSection(
+                    "Tips",
+                    prediction.tips.map { SheetRow.Bullet(it) }.ifEmpty { listOf(SheetRow.Body("No tips available.")) }
+                ),
+                SheetSection(
+                    "Warnings",
+                    prediction.warnings.map { SheetRow.Bullet(it) }.ifEmpty { listOf(SheetRow.Body("No warnings available.")) }
+                )
+            )
+        )
 
-            append(getString(R.string.freshness_label, freshnessStatus.message))
-            append("\n")
-            append(getString(R.string.days_remaining_label, daysRemaining))
-            append("\n\n")
-
-            append(getString(R.string.shelf_life_format, prediction.calculatedDays))
-            append("\n")
-            append(getString(R.string.expires_format, prediction.getFormattedExpirationDate()))
-            append("\n")
-            append(getString(R.string.temperature_format, prediction.storageTemperature))
-            append("\n\n")
-
-            append(getString(R.string.storage_tips))
-            append(":\n")
-            prediction.tips.forEachIndexed { index, tip ->
-                append("${index + 1}. $tip\n")
-            }
-
-            append("\n")
-            append(getString(R.string.warnings))
-            append(":\n")
-            prediction.warnings.forEach { warning ->
-                append("• $warning\n")
-            }
-        }
+        showBottomSheet(sheet)
     }
 
     /**
@@ -562,7 +505,6 @@ class ResultActivity : AppCompatActivity() {
             putExtra(Intent.EXTRA_TEXT, shareText)
             putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_subject, className))
         }
-
         startActivity(Intent.createChooser(shareIntent, getString(R.string.share_result)))
     }
 
@@ -575,16 +517,11 @@ class ResultActivity : AppCompatActivity() {
             append("\n\n")
             append(getString(R.string.share_species, className))
             append("\n")
-
             val confidencePercent = String.format(Locale.getDefault(), "%.2f%%", confidence * 100f)
             append(getString(R.string.share_confidence, confidencePercent))
             append("\n")
 
-            val safetyText = if (isPoisonous) {
-                getString(R.string.poisonous)
-            } else {
-                getString(R.string.safe_to_eat)
-            }
+            val safetyText = if (isPoisonous) getString(R.string.poisonous) else getString(R.string.safe_to_eat)
             append(getString(R.string.share_safety, safetyText))
             append("\n")
 
@@ -626,15 +563,48 @@ class ResultActivity : AppCompatActivity() {
     }
 
     /**
-     * ✅ UPDATED: Show detailed mushroom information dialog with actual photo characteristics
+     * Professional BottomSheet: detailed mushroom information (photo + reference)
      */
     private fun showMoreInfoDialog() {
-        val message = mlModelHelper.getMushroomInfo(classId, currentCharacteristics)
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.detailed_information)
-            .setMessage(message)
-            .setPositiveButton(R.string.ok, null)
-            .show()
+        val confidencePercent = String.format(Locale.getDefault(), "%.2f%%", confidence * 100f)
+        val safetyText = if (isPoisonous) getString(R.string.poisonous) else getString(R.string.safe_to_eat)
+
+        val characteristics = currentCharacteristics
+        val photoDetails = buildString {
+            append("Size: ${characteristics?.estimatedSize ?: "Unknown"}\n")
+            append("Colors: ${characteristics?.dominantColors?.joinToString(", ") ?: "Unknown"}\n")
+            append("Surface: ${characteristics?.surfaceCondition ?: "Unknown"}")
+            val defects = characteristics?.visualDefects.orEmpty()
+            if (defects.isNotEmpty()) append("\nNotes: ${defects.joinToString(", ")}")
+        }
+
+        val referenceInfo = mlModelHelper.getMushroomInfo(classId, currentCharacteristics)
+
+        val sheet = buildBottomSheetView(
+            title = getString(R.string.detailed_information),
+            subtitle = className,
+            sections = listOf(
+                SheetSection(
+                    "Classification",
+                    listOf(
+                        SheetRow.KeyValue("Category", category),
+                        SheetRow.KeyValue("Safety", safetyText),
+                        SheetRow.KeyValue("Confidence", confidencePercent),
+                        SheetRow.KeyValue("Grade", grade ?: "N/A")
+                    )
+                ),
+                SheetSection(
+                    "Photo analysis",
+                    listOf(SheetRow.Body(photoDetails))
+                ),
+                SheetSection(
+                    "Mushroom information",
+                    listOf(SheetRow.Body(referenceInfo))
+                )
+            )
+        )
+
+        showBottomSheet(sheet)
     }
 
     /**
@@ -645,8 +615,6 @@ class ResultActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                Log.d(TAG, "Creating ClassificationResult object...")
-
                 withContext(Dispatchers.IO) {
                     val result = ClassificationResult(
                         className = className,
@@ -662,33 +630,22 @@ class ResultActivity : AppCompatActivity() {
                         imagePath = imagePath
                     )
 
-                    Log.d(TAG, "Result object created: $className")
-
                     val database = AppDatabase.getDatabase(applicationContext)
-                    Log.d(TAG, "Database instance obtained")
-
-                    val rowId = database.resultDao().insertResult(result)
-                    Log.d(TAG, "✅ SAVED to database! Row ID: $rowId")
-
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            this@ResultActivity,
-                            R.string.saved_to_history,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                    database.resultDao().insertResult(result)
                 }
+
+                Toast.makeText(
+                    this@ResultActivity,
+                    R.string.saved_to_history,
+                    Toast.LENGTH_SHORT
+                ).show()
             } catch (ex: Exception) {
-                Log.e(TAG, "❌ FAILED to save to database!", ex)
-                Log.e(TAG, "Error: ${ex.message}")
-
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(
-                        this@ResultActivity,
-                        getString(R.string.error_database),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
+                Log.e(TAG, "Failed to save to database", ex)
+                Toast.makeText(
+                    this@ResultActivity,
+                    getString(R.string.error_database),
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
@@ -708,6 +665,293 @@ class ResultActivity : AppCompatActivity() {
         super.onDestroy()
         mlModelHelper.close()
         imageBitmap?.recycle()
-        Log.d(TAG, "🔚 Activity destroyed, resources cleaned up")
+        Log.d(TAG, "Activity destroyed - resources cleaned up")
     }
+
+    // ------------------------------------------------------------
+    // Bottom Sheet UI (professional, no emojis, padding-safe)
+    // ------------------------------------------------------------
+
+    private data class SheetSection(
+        val title: String,
+        val rows: List<SheetRow>
+    )
+
+    private sealed class SheetRow {
+        data class KeyValue(val key: String, val value: String) : SheetRow()
+        data class Progress(val label: String, val value: Int) : SheetRow()
+        data class Body(val text: String) : SheetRow()
+        data class Bullet(val text: String) : SheetRow()
+        data class Pill(val key: String, val value: String, val colorRes: Int) : SheetRow()
+    }
+
+    private fun showBottomSheet(contentView: View) {
+        val dialog = BottomSheetDialog(this)
+        dialog.setContentView(contentView)
+        dialog.show()
+    }
+
+    private fun buildBottomSheetView(
+        title: String,
+        subtitle: String?,
+        sections: List<SheetSection>
+    ): View {
+        val scroll = ScrollView(this).apply {
+            isFillViewport = true
+        }
+
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        root.addView(makeSheetHandle())
+        root.addView(makeHeader(title, subtitle))
+        root.addView(makeDivider())
+
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPaddingAll(16.dp)
+        }
+
+        sections.forEachIndexed { index, section ->
+            if (index > 0) content.addView(spacer(12.dp))
+            content.addView(makeSectionCard(section))
+        }
+
+        root.addView(content)
+        scroll.addView(root)
+        return scroll
+    }
+
+    private fun makeSheetHandle(): View {
+        val handle = View(this)
+        val bg = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 999f
+            setColor(ContextCompat.getColor(this@ResultActivity, android.R.color.darker_gray))
+            alpha = 80
+        }
+        handle.background = bg
+        handle.layoutParams = LinearLayout.LayoutParams(44.dp, 5.dp).apply {
+            gravity = Gravity.CENTER_HORIZONTAL
+            topMargin = 10.dp
+            bottomMargin = 8.dp
+        }
+        return handle
+    }
+
+    private fun makeHeader(title: String, subtitle: String?): View {
+        val wrapper = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPaddingAll(16.dp)
+        }
+
+        val titleView = TextView(this).apply {
+            text = title
+            textSize = 18f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(ContextCompat.getColor(this@ResultActivity, android.R.color.black))
+        }
+        wrapper.addView(titleView)
+
+        if (!subtitle.isNullOrBlank()) {
+            val subtitleView = TextView(this).apply {
+                text = subtitle
+                textSize = 13f
+                setTextColor(ContextCompat.getColor(this@ResultActivity, android.R.color.darker_gray))
+                setPadding(0, 6.dp, 0, 0)
+            }
+            wrapper.addView(subtitleView)
+        }
+
+        return wrapper
+    }
+
+    private fun makeDivider(): View {
+        return View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                1.dp
+            )
+            setBackgroundColor(ContextCompat.getColor(this@ResultActivity, android.R.color.darker_gray))
+            alpha = 0.25f
+        }
+    }
+
+    private fun makeSectionCard(section: SheetSection): View {
+        val card = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = cardBackground()
+            setPaddingAll(14.dp)
+        }
+
+        val titleView = TextView(this).apply {
+            text = section.title
+            textSize = 14f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(ContextCompat.getColor(this@ResultActivity, android.R.color.black))
+        }
+        card.addView(titleView)
+        card.addView(spacer(10.dp))
+
+        section.rows.forEachIndexed { idx, row ->
+            if (idx > 0) card.addView(spacer(10.dp))
+            card.addView(makeRow(row))
+        }
+
+        return card
+    }
+
+    private fun makeRow(row: SheetRow): View {
+        return when (row) {
+            is SheetRow.KeyValue -> makeKeyValueRow(row.key, row.value)
+            is SheetRow.Progress -> makeProgressRow(row.label, row.value)
+            is SheetRow.Body -> makeBodyText(row.text)
+            is SheetRow.Bullet -> makeBullet(row.text)
+            is SheetRow.Pill -> makePillRow(row.key, row.value, row.colorRes)
+        }
+    }
+
+    private fun makeKeyValueRow(key: String, value: String): View {
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+
+        val keyView = TextView(this).apply {
+            text = key
+            textSize = 13f
+            setTextColor(ContextCompat.getColor(this@ResultActivity, android.R.color.darker_gray))
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+        }
+
+        val valueView = TextView(this).apply {
+            text = value
+            textSize = 13f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(ContextCompat.getColor(this@ResultActivity, android.R.color.black))
+        }
+
+        row.addView(keyView)
+        row.addView(valueView)
+        return row
+    }
+
+    private fun makeProgressRow(label: String, value: Int): View {
+        val wrapper = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+
+        val v = value.coerceIn(0, 100)
+        wrapper.addView(makeKeyValueRow(label, "$v%"))
+
+        val bar = LinearProgressIndicator(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = 8.dp
+            }
+            trackCornerRadius = 8.dp
+            setProgressCompat(v, true)
+        }
+
+        wrapper.addView(bar)
+        return wrapper
+    }
+
+    private fun makePillRow(key: String, value: String, colorRes: Int): View {
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+
+        val keyView = TextView(this).apply {
+            text = key
+            textSize = 13f
+            setTextColor(ContextCompat.getColor(this@ResultActivity, android.R.color.darker_gray))
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+        }
+
+        val pill = TextView(this).apply {
+            text = value
+            textSize = 12f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(ContextCompat.getColor(this@ResultActivity, android.R.color.white))
+            setPaddingVH(10.dp, 6.dp)
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 999f
+                setColor(ContextCompat.getColor(this@ResultActivity, colorRes))
+            }
+        }
+
+        row.addView(keyView)
+        row.addView(pill)
+        return row
+    }
+
+    private fun makeBodyText(text: String): View {
+        return TextView(this).apply {
+            this.text = text
+            textSize = 13f
+            setTextColor(ContextCompat.getColor(this@ResultActivity, android.R.color.black))
+            setLineSpacing(0f, 1.15f)
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun makeBullet(text: String): View {
+        return TextView(this).apply {
+            this.text = "• $text"
+            textSize = 13f
+            setTextColor(ContextCompat.getColor(this@ResultActivity, android.R.color.black))
+            setLineSpacing(0f, 1.15f)
+        }
+    }
+
+    private fun spacer(heightPx: Int): View {
+        return View(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                heightPx
+            )
+        }
+    }
+
+    private fun cardBackground(): GradientDrawable {
+        return GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 16.dp.toFloat()
+            setColor(ContextCompat.getColor(this@ResultActivity, android.R.color.white))
+            setStroke(1.dp, ContextCompat.getColor(this@ResultActivity, android.R.color.darker_gray))
+            alpha = 255
+        }
+    }
+
+    private fun scoreColorRes(score: Int): Int {
+        return when {
+            score >= 85 -> android.R.color.holo_green_dark
+            score >= 70 -> android.R.color.holo_green_light
+            score >= 50 -> android.R.color.holo_orange_dark
+            score >= 30 -> android.R.color.holo_orange_dark
+            else -> android.R.color.holo_red_dark
+        }
+    }
+
+    // Padding helpers to avoid setPadding(...) param errors
+    private fun View.setPaddingAll(p: Int) {
+        setPadding(p, p, p, p)
+    }
+
+    private fun View.setPaddingVH(horizontal: Int, vertical: Int) {
+        setPadding(horizontal, vertical, horizontal, vertical)
+    }
+
+    private val Int.dp: Int
+        get() = (this * resources.displayMetrics.density).toInt()
 }
